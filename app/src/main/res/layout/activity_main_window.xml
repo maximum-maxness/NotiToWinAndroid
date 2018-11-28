@@ -4,41 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainWindow">
+    tools:context=".runner.MainWindow">
 
-    <RadioGroup
-        android:id="@+id/radioGroup"
-        android:layout_width="409dp"
-        android:layout_height="3dp"
-        tools:layout_editor_absoluteY="13dp" />
-
-    <RadioButton
-        android:id="@+id/radioButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Max1"
+    <EditText
+        android:id="@+id/consoleOut"
+        android:layout_width="416dp"
+        android:layout_height="265dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:inputType="none|text|textMultiLine"
+        android:selectAllOnFocus="false"
+        android:singleLine="false"
+        android:text="Console"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
-
-    <RadioButton
-        android:id="@+id/radioButton2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="136dp"
-        android:text="Max2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
-
-    <RadioButton
-        android:id="@+id/radioButton3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="176dp"
-        android:text="Max3"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>
