@@ -1,4 +1,4 @@
-package ca.surgestorm.notitowin.activities;
+package ca.surgestorm.notitowin.views;
 
 public class WindowActivities {
 

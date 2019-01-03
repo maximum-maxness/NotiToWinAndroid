@@ -1,23 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".runner.MainWindow">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/consoleOut"
-        android:layout_width="416dp"
-        android:layout_height="265dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:inputType="none|text|textMultiLine"
-        android:selectAllOnFocus="false"
-        android:singleLine="false"
-        android:text="Console"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</android.support.constraint.ConstraintLayout>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</RelativeLayout>
