@@ -2,12 +2,12 @@ package ca.surgestorm.notitowin.backend;
 
 import android.app.Application;
 
-public class Notification {
+public class DefaultNotification {
 
     private Application app;
 
     public String getAppName() {
-        String s = app.getPackageName().toString();
+        String s = app.getPackageName();
         return s;
     }
 }
