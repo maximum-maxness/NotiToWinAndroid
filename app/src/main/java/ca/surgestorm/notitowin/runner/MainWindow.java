@@ -44,17 +44,18 @@ public class MainWindow extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("ca.surgestorm.notitowin", "exception", e);
         }
-
-        serverList.add(
-                new Server(
-                        intIP,
-                        0,
-                        R.drawable.windows10,
-                        "maxs-laptop",
-                        "18.09"
-                )
-        );
-
+        for (int i = 0; i < 8;
+             i++) {
+            serverList.add(
+                    new Server(
+                            intIP,
+                            0,
+                            R.drawable.windows10,
+                            "maxs-laptop",
+                            "18.09"
+                    )
+            );
+        }
         ServerListUpdater updater = new ServerListUpdater(this, serverList);
         recyclerView.setAdapter(updater);
     }

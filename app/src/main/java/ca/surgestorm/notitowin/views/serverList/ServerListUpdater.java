@@ -25,6 +25,7 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
         this.serverList = serverList;
     }
 
+    @NonNull
     @Override
     public ServerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(listContext);
@@ -52,7 +53,7 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
         TextView serverName, osDescription, serverIP, connectionMethod;
         ImageView previewImage;
 
-        public ServerViewHolder(@NonNull View itemView) {
+        ServerViewHolder(@NonNull View itemView) {
             super(itemView);
 
             serverName = itemView.findViewById(R.id.serverName);

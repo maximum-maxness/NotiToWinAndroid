@@ -44,7 +44,7 @@ public class Server {
 
     //@return returns the servers OS (Should be "WIN10")
     public String getOs() {
-        return "Windows" + " v." + this.os;
+        return "Windows" + " " + this.os;
     }
 
     public int getPreviewImage() {
