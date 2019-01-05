@@ -4,18 +4,24 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/gotonotibutton"
+        android:id="@+id/gotomainbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="View Notifications" />
+        android:text="Go Back" />
+
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:text="Refresh" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/recyclerView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/gotonotibutton"
+        android:layout_below="@+id/gotomainbutton"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="52dp" />
+        android:layout_alignParentBottom="true" />
 </RelativeLayout>

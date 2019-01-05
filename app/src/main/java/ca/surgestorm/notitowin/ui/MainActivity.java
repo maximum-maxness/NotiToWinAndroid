@@ -1,12 +1,16 @@
-package ca.surgestorm.notitowin.runner;
+package ca.surgestorm.notitowin.ui;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +18,13 @@ import java.util.List;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.views.serverList.ServerListUpdater;
 
-public class MainWindow extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     List<Server> serverList;
     RecyclerView recyclerView;
     private static Context appContext;
-
+    public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
     public static Context getAppContext() {
         return appContext;
     }
@@ -36,6 +39,8 @@ public class MainWindow extends AppCompatActivity {
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        configureNextButton();
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
@@ -66,5 +71,15 @@ public class MainWindow extends AppCompatActivity {
         }
         ServerListUpdater updater = new ServerListUpdater(this, serverList);
         recyclerView.setAdapter(updater);
+    }
+
+    private void configureNextButton() {
+        Button nextButton = findViewById(R.id.gotonotibutton);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, NotiListActivity.class));
+            }
+        });
     }
 }

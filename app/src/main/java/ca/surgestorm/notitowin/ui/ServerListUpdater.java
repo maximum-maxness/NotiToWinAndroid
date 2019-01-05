@@ -1,4 +1,4 @@
-package ca.surgestorm.notitowin.views.serverList;
+package ca.surgestorm.notitowin.ui;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

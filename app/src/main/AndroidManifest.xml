@@ -9,18 +9,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".runner.MainWindow">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".views.notifyList.NotiListActivity" />
+        <activity android:name=".ui.NotiListActivity" />
+
+        <service
+            android:name=".controller.notifyList.NotificationCollector"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"/>
+    <!--<uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"/>-->
 
 </manifest>
