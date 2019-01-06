@@ -4,19 +4,29 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.util.Log;
 
+import org.json.JSONException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import ca.surgestorm.notitowin.ui.MainActivity;
 
-public class DefaultNotification extends Notification {
+public class DefaultNotification extends Notification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
 
     private boolean isClearable;
-    private String id, packageName, appName, title, text, time;
+    private String id, packageName, appName, title, text, time, dataLoadHash;
     private Icon largeIcon, smallIcon;
+    private long timeStamp;
 
-    public DefaultNotification(String id) {
+    public DefaultNotification(String id, long timeStamp) {
         this.id = id;
+        this.timeStamp = timeStamp;
         this.appName = "";
         this.packageName = "";
         this.title = "";
@@ -81,27 +91,117 @@ public class DefaultNotification extends Notification {
         this.text = text;
     }
 
+    private static Bitmap iconToBitmap(Icon icon) {
+        if (icon == null) return null;
+
+        Drawable draw = icon.loadDrawable(MainActivity.getAppContext());
+        if (draw == null) return null;
+
+        Bitmap bitmap;
+        if ((draw.getIntrinsicWidth() > 128 || draw.getIntrinsicWidth() > 128)
+                || (draw.getIntrinsicWidth() <= 64 || draw.getIntrinsicHeight() <= 64)) {
+            bitmap = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888);
+        } else {
+            bitmap = Bitmap.createBitmap(draw.getIntrinsicWidth(), draw.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        draw.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        draw.draw(canvas);
+        return bitmap;
+    }
+
+    private static byte[] bitmapToByteArray(Bitmap bmp) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+        byte[] bmpData = os.toByteArray();
+        return bmpData;
+    }
+
+    @Override
     public Icon getLargeIcon() {
         return this.largeIcon;
     }
 
     public void setLargeIcon(Icon largeIcon) {
         this.largeIcon = largeIcon;
+        if (this.largeIcon == null) Log.e("DefaultNotification", "Large Icon is Missing/Null!");
+
     }
 
+    public Bitmap getLargeIconBitmap() {
+        return iconToBitmap(this.getLargeIcon());
+    }
+
+    private InputStream getLargeIconInputStream() {
+        byte[] data = bitmapToByteArray(getLargeIconBitmap());
+        DataLoad dl = new DataLoad(data);
+        this.dataLoadHash = DataLoad.getChecksum(data);
+        return dl.getInputStream();
+    }
+
+    private InputStream getSmallIconInputStream() {
+        byte[] data = bitmapToByteArray(getSmallIconBitmap());
+        DataLoad dl = new DataLoad(data);
+        this.dataLoadHash = DataLoad.getChecksum(data);
+        return dl.getInputStream();
+    }
+
+    private InputStream getIconInputStream() {
+        InputStream inputStream;
+        if (this.largeIcon != null) {
+            inputStream = getLargeIconInputStream();
+        } else {
+            inputStream = getSmallIconInputStream();
+        }
+        return inputStream;
+    }
+
+    @Override
     public Icon getSmallIcon() {
         return this.smallIcon;
-    }
-
-    public void setSmallIcon(Icon smallIcon) {
-        this.smallIcon = smallIcon;
     }
 
     public String getTime() {
         return time;
     }
 
+    public void setSmallIcon(Icon smallIcon) {
+        this.smallIcon = smallIcon;
+        if (this.smallIcon == null) Log.e("DefaultNotification", "Small Icon is Missing/Null!");
+    }
+
     public void setTime(String time) {
         this.time = time;
     }
+
+    public Bitmap getSmallIconBitmap() {
+        return iconToBitmap(this.getSmallIcon());
+    }
+
+    @Override
+    public String toString() {
+        JSONConverter json = new JSONConverter();
+        json.set("id", this.id);
+        json.set("isClearable", this.isClearable);
+        json.set("appName", this.appName == null ? this.packageName : this.appName);
+        json.set("time", Long.toString(this.timeStamp));
+        json.set("title", this.title);
+        json.set("text", this.text);
+        if (getIconInputStream() != null && this.dataLoadHash != null) {
+            json.set("hasDataLoad", true);
+            json.set("dataLoadHash", this.dataLoadHash);
+        }
+        try {
+            return json.serialize();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
 }

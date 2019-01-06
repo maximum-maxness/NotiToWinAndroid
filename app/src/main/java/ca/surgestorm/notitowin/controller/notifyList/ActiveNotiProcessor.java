@@ -21,6 +21,7 @@ import java.util.Set;
 
 import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.ui.MainActivity;
+import ca.surgestorm.notitowin.ui.NotiListActivity;
 
 public class ActiveNotiProcessor implements NotificationCollector.NotificationListener {
 
@@ -33,7 +34,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     private boolean isReady = false;
     private Set<String> currentNotis;
 
-    private static String getStringFromExtra(Bundle extras, String search) {
+    private static String getStringFromExtra(Bundle extras, String search) { //TODO Add Repliable Notification Support, as Well as Media Player Support (Spotify, Google Music)
         Object extra = extras.get(search);
         if (extra == null) {
             return null;
@@ -123,21 +124,37 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
 
         String key = statusBarNotification.getKey(); //Get Notification Key
         String packageName = statusBarNotification.getPackageName(); //Get the package name that made the notification
+        long timeStamp = statusBarNotification.getPostTime();
+        String formattedTime = getDateFromTimestamp(timeStamp);
+//        Log.e("NotiTimeFormatter", ("TimeStamp is: " + timeStamp + ", so formatted time is: " + formattedTime));
 
-        DefaultNotification dn = new DefaultNotification(key);
+
+        DefaultNotification dn = new DefaultNotification(key, timeStamp);
         dn.setLargeIcon(notification.getLargeIcon());
         dn.setSmallIcon(notification.getSmallIcon());
         dn.setPackageName(packageName);
         dn.setClearable(statusBarNotification.isClearable());
         dn.setTitle(getInfoFromNoti(notification, TITLE_KEY));
         dn.setText(getInfoFromNoti(notification, TEXT_KEY));
-        dn.setTime(getDateFromTimestamp(statusBarNotification.getPostTime()));
+        dn.setTime(getDateFromTimestamp(timeStamp));
 
         if (!currentNotis.contains(key)) {
             currentNotis.add(key);
             activeNotis.add(dn);
         }
+        if (!NotiListActivity.refreshButtonPressed) {
+            NotiListActivity.updateNotiArray(activeNotis);
+        }
 
+    }
+
+    public void updateTimes() {
+        for (DefaultNotification dn : activeNotis) {
+            long timeStamp = dn.getTimeStamp();
+            String formattedTime = getDateFromTimestamp(timeStamp);
+//            Log.e("NotiTimeUpdater", ("TimeStamp is: " + timeStamp + ", so formatted time is: " + formattedTime));
+            dn.setTime(formattedTime);
+        }
     }
 
     @Override
@@ -149,8 +166,15 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         Notification notification = statusBarNotification.getNotification();
         String key = statusBarNotification.getKey();
-        currentNotis.remove(key);
-        activeNotis.remove(notification);
+        boolean beenRemoved = false;
+        for (DefaultNotification dn : activeNotis) {
+            if (dn.getId().equals(key)) {
+                activeNotis.remove(dn);
+                currentNotis.remove(key);
+                beenRemoved = true;
+            }
+        }
+        if (!beenRemoved) Log.e("NotiRemover", "Nothing has been removed.");
 
 
     }

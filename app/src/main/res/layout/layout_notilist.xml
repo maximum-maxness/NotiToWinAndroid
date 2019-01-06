@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -7,7 +8,8 @@
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp">
+        android:layout_margin="4dp"
+        app:cardBackgroundColor="@color/cardview_dark_background">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -16,9 +18,10 @@
 
             <ImageView
                 android:id="@+id/appIcon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:padding="4dp" />
+                android:layout_width="48px"
+                android:layout_height="48px"
+                android:padding="4dp"
+                android:scaleType="fitXY" />
 
             <ImageView
                 android:id="@+id/largeIcon"
@@ -34,7 +37,8 @@
                 android:layout_marginLeft="4dp"
                 android:layout_toRightOf="@id/appIcon"
                 android:text="Messages"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption" />
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:textColor="@color/cardview_light_background" />
 
             <TextView
                 android:id="@+id/dot"
@@ -43,7 +47,8 @@
                 android:layout_marginStart="4dp"
                 android:layout_toRightOf="@+id/appName"
                 android:text="•"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption" />
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:textColor="@color/cardview_light_background" />
 
             <TextView
                 android:id="@+id/time"
@@ -52,7 +57,8 @@
                 android:layout_marginStart="4dp"
                 android:layout_toRightOf="@+id/dot"
                 android:text="now"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption" />
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:textColor="@color/cardview_light_background" />
 
             <TextView
                 android:id="@+id/content"
@@ -62,7 +68,8 @@
                 android:layout_toRightOf="@+id/largeIcon"
                 android:padding="4dp"
                 android:text="Max: Hullo"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Small" />
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+                android:textColor="@color/cardview_light_background" />
 
         </RelativeLayout>
     </android.support.v7.widget.CardView>

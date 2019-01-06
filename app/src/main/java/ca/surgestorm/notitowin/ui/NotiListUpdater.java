@@ -18,10 +18,12 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
 
     private Context listContext;
     private List<DefaultNotification> notificationList;
+    private static RecyclerViewClickListener mListener;
 
-    public NotiListUpdater(Context listContext, List<DefaultNotification> notificationList) {
+    public NotiListUpdater(Context listContext, List<DefaultNotification> notificationList, RecyclerViewClickListener itemClickListener) {
         this.listContext = listContext;
         this.notificationList = notificationList;
+        mListener = itemClickListener;
     }
 
     @NonNull
@@ -37,8 +39,8 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
         DefaultNotification notification = notificationList.get(position);
         holder.appName.setText(notification.getAppName());
         holder.content.setText(notification.getText());
-        holder.appIcon.setImageIcon(notification.getSmallIcon());
-        holder.largeIcon.setImageIcon(notification.getLargeIcon());
+        holder.appIcon.setImageBitmap(notification.getSmallIconBitmap());
+        holder.largeIcon.setImageBitmap(notification.getLargeIconBitmap()); //TODO Implement Title into cards, as well as Ticker Text?
         holder.time.setText(notification.getTime());
     }
 
@@ -47,7 +49,7 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
         return notificationList.size();
     }
 
-    class NotiViewHolder extends RecyclerView.ViewHolder {
+    class NotiViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView appName, time, content;
         ImageView appIcon, largeIcon;
@@ -60,6 +62,13 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
             content = itemView.findViewById(R.id.content);
             appIcon = itemView.findViewById(R.id.appIcon);
             largeIcon = itemView.findViewById(R.id.largeIcon);
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            mListener.recyclerViewListClicked(v, getLayoutPosition());
+        }
+
     }
 }

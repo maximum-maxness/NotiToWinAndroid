@@ -15,12 +15,16 @@ import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
-public class NotiListActivity extends AppCompatActivity {
+public class NotiListActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
     public static boolean refreshButtonPressed = false;
     private RecyclerView recyclerView;
-    private ArrayList<DefaultNotification> defaultNotifications;
+    private static ArrayList<DefaultNotification> defaultNotifications;
     private NotiListUpdater updater;
+
+    public static void updateNotiArray(ArrayList<DefaultNotification> defaultNotification) {
+        defaultNotifications = defaultNotification;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,13 +43,16 @@ public class NotiListActivity extends AppCompatActivity {
         configureGoToMainButton(anp);
 
         defaultNotifications = anp.activeNotis;
+        if (defaultNotifications == null) {
+            defaultNotifications = new ArrayList<>();
+        }
 
         recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        updater = new NotiListUpdater(MainActivity.getAppContext(), defaultNotifications);
+        updater = new NotiListUpdater(MainActivity.getAppContext(), defaultNotifications, this);
         recyclerView.setAdapter(updater);
-        configureRefreshButton();
+        configureRefreshButton(anp);
 
     }
 
@@ -61,14 +68,21 @@ public class NotiListActivity extends AppCompatActivity {
         });
     }
 
-    private void configureRefreshButton() {
+    private void configureRefreshButton(ActiveNotiProcessor anp) {
         Button refreshButton = findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                anp.updateTimes();
                 updater.notifyDataSetChanged();
                 refreshButtonPressed = true;
             }
         });
+    }
+
+    @Override
+    public void recyclerViewListClicked(View v, int position) {
+        String s = defaultNotifications.get(position).toString();
+        Log.i("NotiToWin", "JSON Export: " + s);
     }
 }
