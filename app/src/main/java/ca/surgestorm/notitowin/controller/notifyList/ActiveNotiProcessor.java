@@ -15,8 +15,11 @@ import android.util.Log;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import ca.surgestorm.notitowin.backend.DefaultNotification;
@@ -30,7 +33,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     private final String TITLE_KEY = "android.title";
     private final String TEXT_KEY = "android.text";
     public ArrayList<DefaultNotification> activeNotis;
-    //private Map<String> pendingIntents;
+    private Map<String, NotificationReply> pendingIntents;
     private boolean isReady = false;
     private Set<String> currentNotis;
 
@@ -86,7 +89,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
             Log.e("ActiveNotiProcessor", "No Permissions Found!");
             return false;
         }
-
+        this.pendingIntents = new HashMap<>();
         this.currentNotis = new HashSet<>();
         this.activeNotis = new ArrayList<>();
         Log.i("ActiveNotiProcessor", "OnCreate Started!");
@@ -138,6 +141,12 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         dn.setText(getInfoFromNoti(notification, TEXT_KEY));
         dn.setTime(getDateFromTimestamp(timeStamp));
 
+        NotificationReply nr = checkIfRepliable(statusBarNotification);
+        if (nr.pendingIntent != null) {
+            dn.setRequestReplyId(nr.id);
+            this.pendingIntents.put(nr.id, nr);
+        }
+
         if (!currentNotis.contains(key)) {
             currentNotis.add(key);
             activeNotis.add(dn);
@@ -149,11 +158,15 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     }
 
     public void updateTimes() {
-        for (DefaultNotification dn : activeNotis) {
-            long timeStamp = dn.getTimeStamp();
-            String formattedTime = getDateFromTimestamp(timeStamp);
+        if (activeNotis != null) {
+            for (DefaultNotification dn : activeNotis) {
+                long timeStamp = dn.getTimeStamp();
+                String formattedTime = getDateFromTimestamp(timeStamp);
 //            Log.e("NotiTimeUpdater", ("TimeStamp is: " + timeStamp + ", so formatted time is: " + formattedTime));
-            dn.setTime(formattedTime);
+                dn.setTime(formattedTime);
+            }
+        } else {
+
         }
     }
 
@@ -193,5 +206,28 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
 
         }
         return info;
+    }
+
+    private NotificationReply checkIfRepliable(StatusBarNotification sbn) {
+        NotificationReply notificationReply = new NotificationReply();
+
+        if (sbn != null) {
+            try {
+                if (sbn.getNotification().actions != null) {
+                    for (Notification.Action act : sbn.getNotification().actions) {
+                        if (act != null && act.getRemoteInputs() != null) {
+                            notificationReply.remoteInputs.addAll(Arrays.asList(act.getRemoteInputs()));
+                            notificationReply.pendingIntent = act.actionIntent;
+                            break;
+                        }
+                    }
+                    notificationReply.packageName = sbn.getPackageName();
+                    notificationReply.tag = sbn.getTag();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return notificationReply;
     }
 }

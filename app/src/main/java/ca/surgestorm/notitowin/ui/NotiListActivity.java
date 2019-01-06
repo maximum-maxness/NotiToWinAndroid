@@ -13,17 +13,26 @@ import java.util.ArrayList;
 
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
+import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
 public class NotiListActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
     public static boolean refreshButtonPressed = false;
     private RecyclerView recyclerView;
-    private static ArrayList<DefaultNotification> defaultNotifications;
+    public static ArrayList<DefaultNotification> defaultNotifications;
     private NotiListUpdater updater;
+    private ActiveNotiProcessor anp;
 
     public static void updateNotiArray(ArrayList<DefaultNotification> defaultNotification) {
         defaultNotifications = defaultNotification;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        anp.onDestroy();
+        initializeView();
     }
 
     @Override
@@ -31,7 +40,11 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.notilist_activity);
 
-        ActiveNotiProcessor anp = new ActiveNotiProcessor();
+        initializeView();
+    }
+
+    private void initializeView() {
+        anp = new ActiveNotiProcessor();
         Log.i("Noti Activity", "Initialized anp!");
 
         boolean success = anp.onCreate();
@@ -53,9 +66,7 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         updater = new NotiListUpdater(MainActivity.getAppContext(), defaultNotifications, this);
         recyclerView.setAdapter(updater);
         configureRefreshButton(anp);
-
     }
-
 
     private void configureGoToMainButton(ActiveNotiProcessor anp) {
         Button backButton = findViewById(R.id.gotomainbutton);
@@ -82,7 +93,19 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 
     @Override
     public void recyclerViewListClicked(View v, int position) {
+        JSONConverter json = defaultNotifications.get(position).populateJSON();
+        MainActivity.serverConnector.setJson(json);
+        MainActivity.serverConnector.sendJSONToServer();
+
         String s = defaultNotifications.get(position).toString();
+//        CharSequence data = s;
+//        CharSequence description = "JSON Export";
+//        ClipData cd = ClipData.newPlainText(description, data);
+//        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//        clipboard.setPrimaryClip(cd);
+//
+//        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
+//
         Log.i("NotiToWin", "JSON Export: " + s);
     }
 }

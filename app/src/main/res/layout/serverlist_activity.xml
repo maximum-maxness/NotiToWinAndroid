@@ -9,13 +9,56 @@
         android:layout_height="wrap_content"
         android:text="View Notifications" />
 
+    <EditText
+        android:id="@+id/ip1"
+        style="@style/TextAppearance.AppCompat.Small"
+        android:layout_width="135dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/gotonotibutton"
+        android:layout_alignParentStart="true"
+        android:ems="10"
+        android:hint="192.168.1.173"
+        android:inputType="text"
+        android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/port"
+        style="@style/TextAppearance.AppCompat.Small"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/gotonotibutton"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="135dp"
+        android:layout_marginTop="0dp"
+        android:layout_toRightOf="@id/ip1"
+        android:ems="10"
+        android:hint="6565"
+        android:inputType="text"
+        android:singleLine="true" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/gotonotibutton"
+        android:layout_below="@id/ip1"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp"
-        android:layout_marginTop="52dp" />
+        android:layout_marginTop="100dp" />
+
+    <ToggleButton
+        android:id="@+id/connectButton"
+        style="@style/Base.TextAppearance.AppCompat.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ip1"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="100dp"
+        android:checked="false"
+        android:text="Connect"
+        android:textColor="@color/cardview_dark_background"
+        android:textOff="Connect"
+        android:textOn="Disconnect"
+        android:visibility="visible" />
+
 </RelativeLayout>

@@ -39,8 +39,13 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
         DefaultNotification notification = notificationList.get(position);
         holder.appName.setText(notification.getAppName());
         holder.content.setText(notification.getText());
+        holder.title.setText(notification.getTitle());
         holder.appIcon.setImageBitmap(notification.getSmallIconBitmap());
-        holder.largeIcon.setImageBitmap(notification.getLargeIconBitmap()); //TODO Implement Title into cards, as well as Ticker Text?
+        if (notification.getLargeIcon() != null) {
+            holder.largeIcon.setImageBitmap(notification.getLargeIconBitmap()); //TODO Implement Title into cards, as well as Ticker Text?
+        } else {
+            holder.largeIcon.setImageBitmap(notification.getSmallIconBitmap());
+        }
         holder.time.setText(notification.getTime());
     }
 
@@ -51,7 +56,7 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
 
     class NotiViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        TextView appName, time, content;
+        TextView appName, time, content, title;
         ImageView appIcon, largeIcon;
 
         NotiViewHolder(@NonNull View itemView) {
@@ -60,6 +65,7 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
             appName = itemView.findViewById(R.id.appName);
             time = itemView.findViewById(R.id.time);
             content = itemView.findViewById(R.id.content);
+            title = itemView.findViewById(R.id.title);
             appIcon = itemView.findViewById(R.id.appIcon);
             largeIcon = itemView.findViewById(R.id.largeIcon);
             itemView.setOnClickListener(this);

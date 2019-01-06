@@ -19,8 +19,8 @@ import ca.surgestorm.notitowin.ui.MainActivity;
 
 public class DefaultNotification extends Notification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
 
-    private boolean isClearable;
-    private String id, packageName, appName, title, text, time, dataLoadHash;
+    private boolean isClearable, isRepliable;
+    private String id, packageName, appName, title, text, time, dataLoadHash, requestReplyId;
     private Icon largeIcon, smallIcon;
     private long timeStamp;
 
@@ -31,6 +31,8 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         this.packageName = "";
         this.title = "";
         this.text = "";
+        this.requestReplyId = "";
+        this.isRepliable = false;
     }
 
 
@@ -181,6 +183,15 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
 
     @Override
     public String toString() {
+        try {
+            return populateJSON().serialize();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public JSONConverter populateJSON() {
         JSONConverter json = new JSONConverter();
         json.set("id", this.id);
         json.set("isClearable", this.isClearable);
@@ -192,16 +203,26 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
             json.set("hasDataLoad", true);
             json.set("dataLoadHash", this.dataLoadHash);
         }
-        try {
-            return json.serialize();
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (this.isRepliable) {
+            json.set("requestReplyId", this.requestReplyId);
         }
-        return "";
+        return json;
     }
 
     public long getTimeStamp() {
         return timeStamp;
     }
 
+    public String getRequestReplyId() {
+        return requestReplyId;
+    }
+
+    public void setRequestReplyId(String requestReplyId) {
+        this.requestReplyId = requestReplyId;
+        this.isRepliable = true;
+    }
+
+    public boolean isRepliable() {
+        return isRepliable;
+    }
 }

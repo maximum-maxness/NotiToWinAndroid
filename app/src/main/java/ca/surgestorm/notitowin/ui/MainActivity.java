@@ -11,6 +11,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +21,16 @@ import java.util.List;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.controller.ServerConnector;
 
 public class MainActivity extends AppCompatActivity {
 
     List<Server> serverList;
     RecyclerView recyclerView;
     private static Context appContext;
+    public static ServerConnector serverConnector;
     public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
+
     public static Context getAppContext() {
         return appContext;
     }
@@ -41,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         configureNextButton();
+        configureConnectButton();
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
@@ -73,12 +80,46 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(updater);
     }
 
-    private void configureNextButton() {
+    private void configureNextButton() { //TODO Different Threads for different activities
         Button nextButton = findViewById(R.id.gotonotibutton);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, NotiListActivity.class));
+            }
+        });
+    }
+
+    private void configureConnectButton() {
+        ToggleButton connectButton = findViewById(R.id.connectButton);
+        EditText ipField = findViewById((R.id.ip1));
+        EditText portField = findViewById(R.id.port);
+        connectButton.setOnCheckedChangeListener(new ToggleButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.i("MainActivity", "Toggle Button Changed!");
+                if (isChecked) { //Disconnected -> Connected
+
+                    String ip = String.valueOf(ipField.getText());
+                    String portString = String.valueOf(portField.getText());
+                    int port = 0;
+                    if (!portString.isEmpty()) {
+                        port = Integer.parseInt(portString);
+                    }
+                    if ((port != 0) && (!ip.isEmpty())) {
+                        serverConnector = new ServerConnector(ip, port);
+                        serverConnector.connectToSocket();
+                    }
+//                    for(DefaultNotification dn : NotiListActivity.defaultNotifications){
+//                        JSONConverter json = dn.populateJSON();
+//                        serverConnector.setJson(json);
+//                        serverConnector.sendJSONToServer();
+//                    }
+                } else { //Connected -> Disconnected
+                    if (serverConnector != null) {
+                        serverConnector.close();
+                    }
+                }
             }
         });
     }
