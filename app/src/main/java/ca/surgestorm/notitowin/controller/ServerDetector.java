@@ -75,18 +75,18 @@ public class ServerDetector {
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
-            if (message.equals("PAIR_NOTISERVER_RESPONSE")) {
-                Server server = new  Server(
-                        receivePacket.getAddress().getHostAddress(),
-                        receivePacket.getPort(),
-                        0,
-                        R.drawable.windows10,
-                        "Server",
-                        "Windows 10"
-                );
-                serverList.add(server);
-
-            }
+//            if (message.equals("PAIR_NOTISERVER_RESPONSE")) {
+//                Server server = new  Server(
+//                        receivePacket.getAddress().getHostAddress(),
+//                        receivePacket.getPort(),
+//                        0,
+//                        R.drawable.windows10,
+//                        "Server",
+//                        "Windows 10"
+//                );
+//                serverList.add(server);
+//
+//            }
             MainActivity.updateList(serverList);
             //Close the port!
             socket.close();
