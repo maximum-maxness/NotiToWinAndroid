@@ -15,6 +15,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ToggleButton;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     List<Server> serverList;
     RecyclerView recyclerView;
+    private static  ServerListUpdater updater;
     private static Context appContext;
     public static ServerConnector serverConnector;
     public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
@@ -76,8 +80,16 @@ public class MainActivity extends AppCompatActivity {
                     )
             );
         }
-        ServerListUpdater updater = new ServerListUpdater(this, serverList);
+        updater = new ServerListUpdater(this, serverList);
         recyclerView.setAdapter(updater);
+
+    }
+
+    public static void updateList(ArrayList<Server> serverList){
+        for(Server server: serverList){
+            updater.getServerList().add(server);
+        }
+        updater.notifyDataSetChanged();
     }
 
     private void configureNextButton() { //TODO Different Threads for different activities
@@ -103,8 +115,10 @@ public class MainActivity extends AppCompatActivity {
                     String ip = String.valueOf(ipField.getText());
                     String portString = String.valueOf(portField.getText());
                     int port = 0;
-                    if (!portString.isEmpty()) {
-                        port = Integer.parseInt(portString);
+                    if (NumberUtils.isCreatable(portString)) {
+                        if (!portString.isEmpty()) {
+                            port = Integer.parseInt(portString);
+                        }
                     }
                     if ((port != 0) && (!ip.isEmpty())) {
                         serverConnector = new ServerConnector(ip, port);

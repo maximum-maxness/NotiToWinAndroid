@@ -34,7 +34,8 @@
         android:ems="10"
         android:hint="6565"
         android:inputType="text"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:text="8657" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"

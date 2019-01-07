@@ -2,7 +2,7 @@ package ca.surgestorm.notitowin.backend;
 
 public class Server {
     private String ip;
-    private int connectionMethod, previewImage;
+    private int connectionMethod, previewImage, port;
     private String serverName;
     private String os;
 

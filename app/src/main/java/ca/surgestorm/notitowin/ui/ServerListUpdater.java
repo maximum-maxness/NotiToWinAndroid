@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.surgestorm.notitowin.R;
@@ -17,11 +18,18 @@ import ca.surgestorm.notitowin.backend.Server;
 public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.ServerViewHolder> {
 
     private Context listContext;
-
     private List<Server> serverList;
 
     public ServerListUpdater(Context listContext, List<Server> serverList) {
         this.listContext = listContext;
+        this.serverList = serverList;
+    }
+
+    public List<Server> getServerList(){
+        return this.serverList;
+    }
+
+    public void setServerList(List<Server> serverList){
         this.serverList = serverList;
     }
 
