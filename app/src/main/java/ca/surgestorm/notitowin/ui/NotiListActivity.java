@@ -94,8 +94,8 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
     @Override
     public void recyclerViewListClicked(View v, int position) {
         JSONConverter json = defaultNotifications.get(position).populateJSON();
-        MainActivity.serverConnector.setJson(json);
-        MainActivity.serverConnector.sendJSONToServer();
+//        MainActivity.serverConnector.setJson(json);
+//        MainActivity.serverConnector.sendJSONToServer();
 
         String s = defaultNotifications.get(position).toString();
 //        CharSequence data = s;

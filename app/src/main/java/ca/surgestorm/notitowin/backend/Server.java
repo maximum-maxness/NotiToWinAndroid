@@ -1,5 +1,12 @@
 package ca.surgestorm.notitowin.backend;
 
+import android.support.annotation.NonNull;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import ca.surgestorm.notitowin.R;
+
 public class Server {
     private String ip;
     private int connectionMethod, previewImage, port;
@@ -15,10 +22,11 @@ public class Server {
      * @param os The server's OS (Only WIN10 for now)
 
      */
-    public Server(String ip, int connectionMethod, int previewImage, String serverName, String os) {
+    public Server(String ip, int port, int connectionMethod, String serverName, String os) {
         this.ip = ip;
+        this.port = port;
         this.connectionMethod = connectionMethod;
-        this.previewImage = previewImage;
+//        this.previewImage = previewImage;
         this.serverName = serverName;
         this.os = os;
     }
@@ -47,7 +55,44 @@ public class Server {
         return "Windows" + " " + this.os;
     }
 
+    @NonNull
+    public static Server jsonConverter(JSONObject json) throws JSONException {
+        String ip, serverName, os;
+        int port, connectionMethod, previewImage;
+        ip = (String) json.get("ip");
+        port = (int) json.get("port");
+        connectionMethod = (int) json.get("connectionMethod");
+//        previewImage = json.getInt("previewImage");
+        serverName = (String) json.get("serverName");
+        os = (String) json.get("os");
+        return new Server(ip, port, connectionMethod, serverName, os);
+    }
+
     public int getPreviewImage() {
-        return previewImage;
+        return R.drawable.windows10;
+    }
+
+    public int getPort() {
+        return this.port;
+    }
+
+    public JSONObject populateJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("ip", this.ip);
+        json.put("port", this.port);
+        json.put("connectionMethod", this.connectionMethod);
+//        json.set("previewImage", this.previewImage);
+        json.put("serverName", this.serverName);
+        json.put("os", this.os);
+        return json;
+    }
+
+    public String toString() {
+        try {
+            return populateJSON().toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

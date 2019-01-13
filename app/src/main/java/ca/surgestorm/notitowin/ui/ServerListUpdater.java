@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.surgestorm.notitowin.R;
@@ -19,18 +18,17 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
 
     private Context listContext;
     private List<Server> serverList;
+    private static RecyclerViewClickListener mListener;
 
-    public ServerListUpdater(Context listContext, List<Server> serverList) {
+
+    public ServerListUpdater(Context listContext, List<Server> serverList, RecyclerViewClickListener itemClickListener) {
         this.listContext = listContext;
         this.serverList = serverList;
+        mListener = itemClickListener;
     }
 
     public List<Server> getServerList(){
         return this.serverList;
-    }
-
-    public void setServerList(List<Server> serverList){
-        this.serverList = serverList;
     }
 
     @NonNull
@@ -56,7 +54,7 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
         return serverList.size();
     }
 
-    class ServerViewHolder extends RecyclerView.ViewHolder {
+    class ServerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView serverName, osDescription, serverIP, connectionMethod;
         ImageView previewImage;
@@ -69,6 +67,12 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
             serverIP = itemView.findViewById(R.id.serverIP);
             previewImage = itemView.findViewById(R.id.previewImage);
             connectionMethod = itemView.findViewById(R.id.connectionMethod);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            mListener.recyclerViewListClicked(v, getLayoutPosition());
         }
     }
 }

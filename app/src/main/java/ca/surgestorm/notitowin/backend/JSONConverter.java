@@ -9,12 +9,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("Duplicates")
 public class JSONConverter extends JSONObject {
     private long id;
+    private String type;
     private JSONObject mainBody;
 
-    public JSONConverter() {
+    public JSONConverter(String type) {
         this.id = System.currentTimeMillis();
+        this.type = type;
         mainBody = new JSONObject();
     }
 
@@ -195,6 +198,14 @@ public class JSONConverter extends JSONObject {
         else return defaultValue;
     }
 
+    public static JSONConverter unserialize(String s) throws JSONException {
+        JSONObject jo = new JSONObject(s);
+        JSONConverter json = new JSONConverter(jo.getString("type"));
+        json.id = jo.getLong("id");
+        json.mainBody = jo.getJSONObject("body");
+        return json;
+    }
+
     //================================================================================
     // Other Methods
     //================================================================================
@@ -203,12 +214,15 @@ public class JSONConverter extends JSONObject {
         return mainBody.has(key);
     }
 
+    public String getType() {
+        return this.type;
+    }
 
     public String serialize() throws JSONException {
         JSONObject jo = new JSONObject();
         jo.put("id", id);
+        jo.put("type", type);
         jo.put("body", mainBody);
-        //QJSon does not escape slashes, but Java JSONObject does. Converting to QJson format.
         return jo.toString().replace("\\/", "/") + "\n";
     }
 }

@@ -192,7 +192,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
     }
 
     public JSONConverter populateJSON() {
-        JSONConverter json = new JSONConverter();
+        JSONConverter json = new JSONConverter(PacketType.NOTI_REQUEST);
         json.set("id", this.id);
         json.set("isClearable", this.isClearable);
         json.set("appName", this.appName == null ? this.packageName : this.appName);
@@ -202,9 +202,14 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         if (getIconInputStream() != null && this.dataLoadHash != null) {
             json.set("hasDataLoad", true);
             json.set("dataLoadHash", this.dataLoadHash);
+        } else {
+            json.set("hasDataLoad", false)
         }
         if (this.isRepliable) {
+            json.set("isRepliable", this.isRepliable);
             json.set("requestReplyId", this.requestReplyId);
+        } else {
+            json.set("isRepliable", this.isRepliable);
         }
         return json;
     }
