@@ -13,6 +13,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -20,8 +23,8 @@ import java.util.concurrent.Executors;
 
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.controller.ServerConnector;
 import ca.surgestorm.notitowin.controller.ServerDetector;
+import ca.surgestorm.notitowin.controller.ServerSender;
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
@@ -29,9 +32,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     RecyclerView recyclerView;
     private static ServerListUpdater updater;
     private Executor exec;
+    public static ServerSender serverSender;
     private ServerDetector serverDetector;
     private static Context appContext;
-    public static ServerConnector serverConnector;
     public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
 
     public static Context getAppContext() {
@@ -80,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
                 serverList.clear();
                 if (!ServerDetector.isRunning()) {
                     exec.execute(serverDetector);
+                } else {
+                    serverDetector.stop();
+                    exec.execute(serverDetector);
                 }
             }
         });
@@ -87,7 +93,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void recyclerViewListClicked(View v, int position) {
-//        serverConnector = new ServerConnector(serverList.get(position));
+        try {
+            serverSender = new ServerSender(serverList.get(position).getIp(), serverList.get(position).getPort());
+        } catch (SocketException | UnknownHostException e) {
+            e.printStackTrace();
+        }
         startActivity(new Intent(MainActivity.this, NotiListActivity.class));
     }
 }

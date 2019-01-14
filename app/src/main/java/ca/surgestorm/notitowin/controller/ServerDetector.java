@@ -66,6 +66,7 @@ public class ServerDetector implements Runnable {
                 socket.send(sendPacket);
                 Log.i("ServerDetector", "Sending Packet to 255.255.255.255");
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             // Broadcast the message over all the network interfaces
@@ -88,6 +89,7 @@ public class ServerDetector implements Runnable {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, port);
                         socket.send(sendPacket);
                     } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                     Log.i("ServerDetector", "Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
@@ -125,13 +127,16 @@ public class ServerDetector implements Runnable {
                 DatagramPacket confirmPacket = new DatagramPacket(replyMessage, replyMessage.length, InetAddress.getByName(receivePacket.getAddress().getHostAddress()), receivePacket.getPort());
                 socket.send(confirmPacket);
             }
-
-            socket.close();
         } catch (IOException ex) {
             Log.e("ServerDetector", "Error Finding Server");
             ex.printStackTrace();
         }
 
+    }
+
+    public void stop(){
+        socket.close();
+        running = false;
     }
 
     private static class ServerDetectorHolder {

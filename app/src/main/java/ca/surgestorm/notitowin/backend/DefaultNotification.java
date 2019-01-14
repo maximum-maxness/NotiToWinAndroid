@@ -203,7 +203,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
             json.set("hasDataLoad", true);
             json.set("dataLoadHash", this.dataLoadHash);
         } else {
-            json.set("hasDataLoad", false)
+            json.set("hasDataLoad", false);
         }
         if (this.isRepliable) {
             json.set("isRepliable", this.isRepliable);

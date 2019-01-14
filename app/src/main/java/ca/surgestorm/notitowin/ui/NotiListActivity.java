@@ -9,6 +9,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 import ca.surgestorm.notitowin.R;
@@ -97,7 +100,13 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 //        MainActivity.serverConnector.setJson(json);
 //        MainActivity.serverConnector.sendJSONToServer();
 
-        String s = defaultNotifications.get(position).toString();
+        try {
+            String s = json.serialize();
+            MainActivity.serverSender.sendJson(s);
+            Log.i("NotiToWin", "JSON Export: " + s);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
 //        CharSequence data = s;
 //        CharSequence description = "JSON Export";
 //        ClipData cd = ClipData.newPlainText(description, data);
@@ -106,6 +115,5 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 //
 //        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
 //
-        Log.i("NotiToWin", "JSON Export: " + s);
     }
 }
