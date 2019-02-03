@@ -24,18 +24,21 @@ public class ServerSender {
     public ServerSender(String ip, int port) throws SocketException, UnknownHostException {
         this.ip = getByName(ip);
         this.port = port;
-        this.socket = new DatagramSocket(this.port);
+        this.socket = new DatagramSocket(this.port, this.ip);
+        this.socket.setBroadcast(true);
     }
 
     public void sendJson(String json) throws IOException {
         byte[] sendData = PacketType.NOTI_REQUEST.getBytes();
         DatagramPacket packet = new DatagramPacket(sendData, sendData.length, this.ip, this.port);
         this.socket.send(packet);
-
+        System.out.println("Sent Request!");
         if (waitForServerReady()) {
-            sendData = json.getBytes();
-            packet = new DatagramPacket(sendData, sendData.length, this.ip, this.port);
-            this.socket.send(packet);
+            System.out.println("Got Reply!");
+            byte[] newSendData = json.getBytes();
+            DatagramPacket newPacket = new DatagramPacket(newSendData, newSendData.length, this.ip, this.port);
+            this.socket.send(newPacket);
+            Log.i("ServerSender", "Sent: " + json);
             if (!waitForServerReady()) {
                 Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
             } else {

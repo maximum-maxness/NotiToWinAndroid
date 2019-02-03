@@ -114,7 +114,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     }
 
     public void sendNotification(StatusBarNotification statusBarNotification) {
-        Log.i("ActiveNotiProcessor", "Send Notification Started!");
+//        Log.i("ActiveNotiProcessor", "Send Notification Started!");
         Notification notification = statusBarNotification.getNotification(); //get the actual notification
 
         //Filter out notifications that we don't want

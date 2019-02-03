@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
+import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
@@ -62,7 +63,7 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         if (defaultNotifications == null) {
             defaultNotifications = new ArrayList<>();
         }
-
+        Log.e("INTERNAL IP", IPGetter.getInternalIP(true));
         recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -102,8 +103,8 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 
         try {
             String s = json.serialize();
-            MainActivity.serverSender.sendJson(s);
             Log.i("NotiToWin", "JSON Export: " + s);
+            MainActivity.serverSender.sendJson(s);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }

@@ -127,7 +127,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
 
     public void setLargeIcon(Icon largeIcon) {
         this.largeIcon = largeIcon;
-        if (this.largeIcon == null) Log.e("DefaultNotification", "Large Icon is Missing/Null!");
+//        if (this.largeIcon == null) Log.e("DefaultNotification", "Large Icon is Missing/Null!");
 
     }
 
