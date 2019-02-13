@@ -104,7 +104,9 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         try {
             String s = json.serialize();
             Log.i("NotiToWin", "JSON Export: " + s);
-            MainActivity.serverSender.sendJson(s);
+            if (MainActivity.serverSender != null) {
+                MainActivity.serverSender.sendJson(s);
+            }
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
