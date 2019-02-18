@@ -25,6 +25,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
 
     private static DatagramSocket socket;
     private static final int port = 8657;
+    private static InetAddress ip;
     private static boolean running = false;
     @SuppressLint("HandlerLeak")
     private Handler handle = new Handler() {
@@ -49,6 +50,14 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
 
     public static ServerDetector getInstance() {
         return ServerDetectorHolder.INSTANCE;
+    }
+
+    public static InetAddress getIp() {
+        return ip;
+    }
+
+    public static void setIp(InetAddress ip) {
+        ServerDetector.ip = ip;
     }
 
     @Override
@@ -132,6 +141,37 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
             ex.printStackTrace();
         }
 
+    }
+
+    public void sendJson(String json) throws IOException {
+        byte[] sendData = PacketType.NOTI_REQUEST.getBytes();
+        DatagramPacket packet = new DatagramPacket(sendData, sendData.length, this.ip, this.port);
+        this.socket.send(packet);
+        System.out.println("Sent Request!");
+        if (waitForServerReady()) {
+            System.out.println("Got Reply!");
+            byte[] newSendData = json.getBytes();
+            DatagramPacket newPacket = new DatagramPacket(newSendData, newSendData.length, this.ip, this.port);
+            this.socket.send(newPacket);
+            Log.i("ServerSender", "Sent: " + json);
+            if (!waitForServerReady()) {
+                Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
+            } else {
+                Log.i("ServerSender", "Sent JSON Successfully!");
+            }
+        } else {
+            Log.e("ServerSender", "Server did not reply ready after sending noti request!");
+        }
+    }
+
+    private boolean waitForServerReady() throws IOException {
+        byte[] replyBuff = new byte[15000];
+        DatagramPacket serverReply = new DatagramPacket(replyBuff, replyBuff.length);
+        this.socket.receive(serverReply);
+        String message = new String(serverReply.getData());
+        message = message.trim();
+        Log.w("ServerReplyMessage", message);
+        return message.equals(PacketType.READY_RESPONSE);
     }
 
     public void stop(){

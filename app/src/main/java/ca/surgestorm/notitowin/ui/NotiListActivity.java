@@ -107,21 +107,17 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         try {
             String s = json.serialize();
             Log.i("NotiToWin", "JSON Export: " + s);
-            if (MainActivity.serverSender != null) {
-                MainActivity.serverSender.sendJson(s);
-            } else {
-                Toast.makeText(MainActivity.getAppContext(), "Server Sender is null!", Toast.LENGTH_SHORT).show();
-            }
-            CharSequence data = s;
-            CharSequence description = "JSON Export";
-            ClipData cd = ClipData.newPlainText(description, data);
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(cd);
+            MainActivity.serverDetector.sendJson(s);
+//            CharSequence data = s;
+//            CharSequence description = "JSON Export";
+//            ClipData cd = ClipData.newPlainText(description, data);
+//            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//            clipboard.setPrimaryClip(cd);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
-//
-//        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
-//
+
+        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
+
     }
 }

@@ -33,8 +33,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     RecyclerView recyclerView;
     private static ServerListUpdater updater;
     private Executor exec;
-    public static ServerSender serverSender;
-    private ServerDetector serverDetector;
+    public static ServerDetector serverDetector;
     private static Context appContext;
     public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
 
@@ -94,10 +93,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
     @Override
     public void recyclerViewListClicked(View v, int position) {
+
         try {
-            serverSender = new ServerSender(serverList.get(position).getIp(), serverList.get(position).getPort());
-        } catch (SocketException | UnknownHostException e) {
-            Log.e("MainActivity", "Can't create server sender!" + e.getLocalizedMessage());
+            ServerDetector.setIp(InetAddress.getByName(serverList.get(position).getIp()));
+        } catch (UnknownHostException e) {
+            Log.e("MainActivity", "Unknown Host");
         }
         startActivity(new Intent(MainActivity.this, NotiListActivity.class));
     }
