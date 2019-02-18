@@ -1,5 +1,8 @@
 package ca.surgestorm.notitowin.ui;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -100,21 +104,22 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         JSONConverter json = defaultNotifications.get(position).populateJSON();
 //        MainActivity.serverConnector.setJson(json);
 //        MainActivity.serverConnector.sendJSONToServer();
-
         try {
             String s = json.serialize();
             Log.i("NotiToWin", "JSON Export: " + s);
             if (MainActivity.serverSender != null) {
                 MainActivity.serverSender.sendJson(s);
+            } else {
+                Toast.makeText(MainActivity.getAppContext(), "Server Sender is null!", Toast.LENGTH_SHORT).show();
             }
+            CharSequence data = s;
+            CharSequence description = "JSON Export";
+            ClipData cd = ClipData.newPlainText(description, data);
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(cd);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
-//        CharSequence data = s;
-//        CharSequence description = "JSON Export";
-//        ClipData cd = ClipData.newPlainText(description, data);
-//        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//        clipboard.setPrimaryClip(cd);
 //
 //        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
 //

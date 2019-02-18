@@ -10,6 +10,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         try {
             serverSender = new ServerSender(serverList.get(position).getIp(), serverList.get(position).getPort());
         } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
+            Log.e("MainActivity", "Can't create server sender!" + e.getLocalizedMessage());
         }
         startActivity(new Intent(MainActivity.this, NotiListActivity.class));
     }

@@ -21,7 +21,7 @@ import ca.surgestorm.notitowin.backend.PacketType;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
 
-public class ServerDetector implements Runnable {
+public class ServerDetector implements Runnable {//TODO Rewrite this and combine with server sender
 
     private static DatagramSocket socket;
     private static final int port = 8657;
