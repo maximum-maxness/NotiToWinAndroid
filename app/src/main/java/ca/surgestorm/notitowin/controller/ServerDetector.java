@@ -3,8 +3,10 @@ package ca.surgestorm.notitowin.controller;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +19,7 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
+import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.PacketType;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
@@ -27,6 +30,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
     private static final int port = 8657;
     private static InetAddress ip;
     private static boolean running = false;
+
     @SuppressLint("HandlerLeak")
     private Handler handle = new Handler() {
         @Override
@@ -63,12 +67,12 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
     @Override
     public void run() {
         try {
+
             running = true;
             socket = new DatagramSocket();
             socket.setBroadcast(true);
 
             byte[] sendData = PacketType.CLIENT_PAIR_REQUEST.getBytes();
-
             //Try the 255.255.255.255 first
             try {
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), port);
@@ -83,7 +87,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
 
-                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                if (networkInterface.isLoopback() || !networkInterface.isUp() || networkInterface.getDisplayName().contains("radio")) {
                     continue; // Don't want to broadcast to the loopback interface
                 }
 
@@ -137,7 +141,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
                 socket.send(confirmPacket);
             }
         } catch (IOException ex) {
-            Log.e("ServerDetector", "Error Finding Server");
+            Log.e("ServerDetector", "Error Finding Server, " + ex.getLocalizedMessage());
             ex.printStackTrace();
         }
 
@@ -174,7 +178,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
         return message.equals(PacketType.READY_RESPONSE);
     }
 
-    public void stop(){
+    public void stop() {
         socket.close();
         running = false;
     }
