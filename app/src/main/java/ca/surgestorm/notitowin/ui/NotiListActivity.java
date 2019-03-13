@@ -1,8 +1,5 @@
 package ca.surgestorm.notitowin.ui;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -107,7 +104,7 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         try {
             String s = json.serialize();
             Log.i("NotiToWin", "JSON Export: " + s);
-            MainActivity.serverDetector.sendJson(s);
+            MainActivity.serverSender.sendJson(s);
 //            CharSequence data = s;
 //            CharSequence description = "JSON Export";
 //            ClipData cd = ClipData.newPlainText(description, data);

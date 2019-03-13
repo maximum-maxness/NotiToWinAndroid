@@ -3,10 +3,8 @@ package ca.surgestorm.notitowin.controller;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +17,6 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.PacketType;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
@@ -56,14 +53,6 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
         return ServerDetectorHolder.INSTANCE;
     }
 
-    public static InetAddress getIp() {
-        return ip;
-    }
-
-    public static void setIp(InetAddress ip) {
-        ServerDetector.ip = ip;
-    }
-
     @Override
     public void run() {
         try {
@@ -72,7 +61,7 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
             socket = new DatagramSocket();
             socket.setBroadcast(true);
 
-            byte[] sendData = PacketType.CLIENT_PAIR_REQUEST.getBytes();
+            byte[] sendData = (PacketType.CLIENT_PAIR_REQUEST + android.os.Build.MODEL).getBytes();
             //Try the 255.255.255.255 first
             try {
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), port);
@@ -145,37 +134,6 @@ public class ServerDetector implements Runnable {//TODO Rewrite this and combine
             ex.printStackTrace();
         }
 
-    }
-
-    public void sendJson(String json) throws IOException {
-        byte[] sendData = PacketType.NOTI_REQUEST.getBytes();
-        DatagramPacket packet = new DatagramPacket(sendData, sendData.length, this.ip, this.port);
-        this.socket.send(packet);
-        System.out.println("Sent Request!");
-        if (waitForServerReady()) {
-            System.out.println("Got Reply!");
-            byte[] newSendData = json.getBytes();
-            DatagramPacket newPacket = new DatagramPacket(newSendData, newSendData.length, this.ip, this.port);
-            this.socket.send(newPacket);
-            Log.i("ServerSender", "Sent: " + json);
-            if (!waitForServerReady()) {
-                Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
-            } else {
-                Log.i("ServerSender", "Sent JSON Successfully!");
-            }
-        } else {
-            Log.e("ServerSender", "Server did not reply ready after sending noti request!");
-        }
-    }
-
-    private boolean waitForServerReady() throws IOException {
-        byte[] replyBuff = new byte[15000];
-        DatagramPacket serverReply = new DatagramPacket(replyBuff, replyBuff.length);
-        this.socket.receive(serverReply);
-        String message = new String(serverReply.getData());
-        message = message.trim();
-        Log.w("ServerReplyMessage", message);
-        return message.equals(PacketType.READY_RESPONSE);
     }
 
     public void stop() {

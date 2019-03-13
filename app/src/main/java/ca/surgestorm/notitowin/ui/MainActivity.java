@@ -14,8 +14,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     private static ServerListUpdater updater;
     private Executor exec;
     public static ServerDetector serverDetector;
+    public static ServerSender serverSender;
     private static Context appContext;
     public static final int RESULT_NEEDS_RELOAD = Activity.RESULT_FIRST_USER;
 
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
         exec = Executors.newFixedThreadPool(1);
         serverDetector = ServerDetector.getInstance();
+        serverSender = new ServerSender();
         exec.execute(serverDetector);
 
         configureRefreshButton();
@@ -95,9 +97,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     public void recyclerViewListClicked(View v, int position) {
 
         try {
-            ServerDetector.setIp(InetAddress.getByName(serverList.get(position).getIp()));
+            serverSender.setIP(InetAddress.getByName(serverList.get(position).getIp()));
+            serverSender.connect();
         } catch (UnknownHostException e) {
             Log.e("MainActivity", "Unknown Host");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         startActivity(new Intent(MainActivity.this, NotiListActivity.class));
     }
