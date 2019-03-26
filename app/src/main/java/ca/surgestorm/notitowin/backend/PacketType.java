@@ -1,5 +1,7 @@
 package ca.surgestorm.notitowin.backend;
 
+import org.json.JSONException;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +10,7 @@ public class PacketType {
     public static final String SERVER_PAIR_RESPONSE = "SERVER_PAIR_RESPONSE";
     public static final String CLIENT_PAIR_CONFIRM = "CLIENT_PAIR_CONFIRM";
     public static final String NOTI_REQUEST = "ANDR_NOTI_RECEIVE";
+    public static final String NOTIFICATION = "NOTIFICATION";
     public static final String SEND_REPLY = "WIN_REPLY_RECEIVE";
     public static final String DATALOAD_REQUEST = "ANDR_DATALOAD_RECEIVE";
     public static final String READY_RESPONSE = "WIN_READY";
@@ -24,4 +27,11 @@ public class PacketType {
         add(READY_RESPONSE);
         add(UNPAIR_CMD);
     }};
+
+    public static String makeDiscoveryPacket() throws JSONException {
+        JSONConverter json = new JSONConverter(CLIENT_PAIR_REQUEST);
+        String deviceName = android.os.Build.MODEL;
+        json.getMainBody().put("deviceName", deviceName);
+        return json.serialize();
+    }
 }

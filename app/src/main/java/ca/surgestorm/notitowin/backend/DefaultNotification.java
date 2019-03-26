@@ -10,8 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.util.Log;
 
-import org.json.JSONException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
@@ -183,16 +181,11 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
 
     @Override
     public String toString() {
-        try {
             return populateJSON().serialize();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 
     public JSONConverter populateJSON() {
-        JSONConverter json = new JSONConverter(PacketType.NOTI_REQUEST);
+        JSONConverter json = new JSONConverter(PacketType.NOTIFICATION);
         json.set("id", this.id);
         json.set("isClearable", this.isClearable);
         json.set("appName", this.appName == null ? this.packageName : this.appName);

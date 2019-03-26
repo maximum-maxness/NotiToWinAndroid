@@ -2,42 +2,66 @@ package ca.surgestorm.notitowin.controller;
 
 import android.util.Log;
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.PacketType;
 
 public class ServerSender {
     private final int port = 9856;
     private Socket socket;
     private InputStream inputStream;
+    private DataInputStream dataInputStream;
     private OutputStream outputStream;
-    private BufferedReader bufferedReader;
+    private DataOutputStream dataOutputStream;
     private InetAddress ip;
-    private PrintWriter printWriter;
 
     public ServerSender() {
     }
 
-    public void connect() throws IOException {
+    public boolean connect() {
+        int count = 0;
+        int maxTries = 5;
         this.socket = new Socket();
-        this.socket.connect(new InetSocketAddress(ip, port));
-        openStreams();
+        while (true) {
+            try {
+                this.socket.connect(new InetSocketAddress(ip, port));
+                openStreams();
+                break;
+            } catch (IOException e) {
+                // handle exception
+                if (++count == maxTries) {
+                    Log.e("ServerSender", "Couldn't connect to server after " + count + " tries.");
+                    return false;
+                }
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return waitForServerReady();
     }
 
-    public void sendMessage(String message) {
-        this.printWriter.write(message);
+    public void sendMessage(String message) throws IOException {
+        this.dataOutputStream.writeUTF(message);
+        this.dataOutputStream.flush();
+        Log.i("ServerSender", "Sent message: " + message);
     }
 
     public String receiveMessage() throws IOException {
-        return this.bufferedReader.readLine();
+        Log.i("ServerSender", "Waiting for Packet...");
+        String message = this.dataInputStream.readUTF();
+        Log.i("ServerSender", "Received Message: " + message);
+        return message;
     }
 
     public InetAddress getIP() {
@@ -52,10 +76,6 @@ public class ServerSender {
         return this.socket;
     }
 
-    public BufferedReader getBufferedReader() {
-        return bufferedReader;
-    }
-
     public InputStream getInputStream() {
         return inputStream;
     }
@@ -64,12 +84,13 @@ public class ServerSender {
         return outputStream;
     }
 
-    public PrintWriter getPrintWriter() {
-        return printWriter;
-    }
-
     public int getPort() {
         return this.port;
+    }
+
+    public void disconnect() throws IOException {
+        sendMessage(PacketType.UNPAIR_CMD);
+        stop();
     }
 
     public void stop() throws IOException {
@@ -78,59 +99,59 @@ public class ServerSender {
         Thread.currentThread().interrupt();
     }
 
-    private void openReader() {
-        this.bufferedReader = new BufferedReader(new InputStreamReader(this.inputStream));
-    }
-
-    private void closeReader() throws IOException {
-        if (this.bufferedReader != null)
-            this.bufferedReader.close();
-    }
-
-    private void openWriter() {
-        this.printWriter = new PrintWriter(this.outputStream);
-    }
-
-    private void closeWriter() {
-        if (this.printWriter != null)
-            this.printWriter.close();
-
-    }
 
     public void openStreams() throws IOException {
         this.inputStream = this.socket.getInputStream();
-        openReader();
         this.outputStream = this.socket.getOutputStream();
-        openWriter();
+        this.dataInputStream = new DataInputStream(this.inputStream);
+        this.dataOutputStream = new DataOutputStream(this.outputStream);
     }
 
     public void closeStreams() throws IOException {
-        closeReader();
+        this.dataInputStream.close();
+        this.dataOutputStream.close();
         this.inputStream.close();
-        closeWriter();
         this.outputStream.close();
     }
 
     public void sendJson(String json) throws IOException {
-        sendMessage(PacketType.NOTI_REQUEST);
-        System.out.println("Sent Request!");
-        if (waitForServerReady()) {
-            System.out.println("Got Reply!");
-            sendMessage(json);
-            Log.i("ServerSender", "Sent: " + json);
-            if (!waitForServerReady()) {
-                Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
+        if (this.socket.isConnected()) {
+            sendMessage(new JSONConverter(PacketType.NOTI_REQUEST).serialize());
+            System.out.println("Sent Request!");
+            if (waitForServerReady()) {
+                System.out.println("Got Reply!");
+                sendMessage(json);
+                Log.i("ServerSender", "Sent: " + json);
+                if (!waitForServerReady()) {
+                    Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
+                } else {
+                    Log.i("ServerSender", "Sent JSON Successfully!");
+                }
             } else {
-                Log.i("ServerSender", "Sent JSON Successfully!");
+                Log.e("ServerSender", "Server did not reply ready after sending noti request!");
             }
         } else {
-            Log.e("ServerSender", "Server did not reply ready after sending noti request!");
+            closeStreams();
+            socket.close();
+
         }
     }
 
 
-    private boolean waitForServerReady() throws IOException {
-        String message = receiveMessage();
-        return message.equals(PacketType.READY_RESPONSE);
+    private boolean waitForServerReady() {
+        Log.i("ServerSender", "Waiting for Server Ready...");
+        String message = null;
+        try {
+            message = receiveMessage();
+        } catch (IOException e) {
+            Log.e("ServerSender", "Couldn't Receive Message. Error: " + e.getLocalizedMessage());
+        }
+        if (message == null) {
+            Log.e("ServerSender", "Message Received is null!");
+            return false;
+        }
+        JSONConverter json = JSONConverter.unserialize(message);
+        Log.i("ServerSender", "Received: " + message);
+        return json.getType().equals(PacketType.READY_RESPONSE);
     }
 }

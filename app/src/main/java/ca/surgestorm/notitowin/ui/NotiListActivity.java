@@ -10,14 +10,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
-import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
@@ -64,7 +61,6 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         if (defaultNotifications == null) {
             defaultNotifications = new ArrayList<>();
         }
-        Log.e("INTERNAL IP", IPGetter.getInternalIP(true));
         recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -78,10 +74,19 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                anp.onDestroy();
-                startActivity(new Intent(NotiListActivity.this, MainActivity.class));
+                goBackToMain();
             }
         });
+    }
+
+    public void goBackToMain() {
+        anp.onDestroy();
+        try {
+            MainActivity.serverSender.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        startActivity(new Intent(NotiListActivity.this, MainActivity.class));
     }
 
     private void configureRefreshButton(ActiveNotiProcessor anp) {
@@ -110,7 +115,7 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 //            ClipData cd = ClipData.newPlainText(description, data);
 //            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 //            clipboard.setPrimaryClip(cd);
-        } catch (IOException | JSONException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

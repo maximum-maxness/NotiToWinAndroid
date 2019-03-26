@@ -15,6 +15,8 @@ public class JSONConverter extends JSONObject {
     private String type;
     private JSONObject mainBody;
 
+    public static final String ERROR_STRING = "ERROR";
+
     public JSONConverter(String type) {
         this.id = System.currentTimeMillis();
         this.type = type;
@@ -198,12 +200,18 @@ public class JSONConverter extends JSONObject {
         else return defaultValue;
     }
 
-    public static JSONConverter unserialize(String s) throws JSONException {
-        JSONObject jo = new JSONObject(s);
-        JSONConverter json = new JSONConverter(jo.getString("type"));
-        json.id = jo.getLong("id");
-        json.mainBody = jo.getJSONObject("body");
-        return json;
+    public static JSONConverter unserialize(String s) {
+        JSONObject jo = null;
+        try {
+            jo = new JSONObject(s);
+            JSONConverter json = new JSONConverter(jo.getString("type"));
+            json.id = jo.getLong("id");
+            json.mainBody = jo.getJSONObject("body");
+            return json;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new JSONConverter(ERROR_STRING);
     }
 
     //================================================================================
@@ -218,11 +226,15 @@ public class JSONConverter extends JSONObject {
         return this.type;
     }
 
-    public String serialize() throws JSONException {
+    public String serialize() {
         JSONObject jo = new JSONObject();
-        jo.put("id", id);
-        jo.put("type", type);
-        jo.put("body", mainBody);
-        return jo.toString().replace("\\/", "/") + "\n";
+        try {
+            jo.put("id", id);
+            jo.put("type", type);
+            jo.put("body", mainBody);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jo.toString().replace("\\/", "/");
     }
 }

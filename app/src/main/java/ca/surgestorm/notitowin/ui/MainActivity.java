@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import ca.surgestorm.notitowin.R;
+import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.controller.ServerDetector;
 import ca.surgestorm.notitowin.controller.ServerSender;
@@ -40,6 +41,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
     public static Context getAppContext() {
         return appContext;
+    }
+
+    public static boolean hasServer(Server server) {
+        boolean match = false;
+        for (Server server1 : updater.getServerList()) {
+            if (server1.getIp().equals(server.getIp())) {
+                match = true;
+            }
+        }
+        return match;
     }
 
     public static void updateList(Server server) {
@@ -64,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         serverSender = new ServerSender();
         exec.execute(serverDetector);
 
+        for (String s : IPGetter.getInternalIP(true))
+            Log.e("INTERNAL IP", s);
+
         configureRefreshButton();
 //        configureNextButton();
 
@@ -83,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
             @Override
             public void onClick(View v) {
                 serverList.clear();
+                updater.notifyDataSetChanged();
                 if (!ServerDetector.isRunning()) {
                     exec.execute(serverDetector);
                 } else {
@@ -97,13 +112,19 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     public void recyclerViewListClicked(View v, int position) {
 
         try {
-            serverSender.setIP(InetAddress.getByName(serverList.get(position).getIp()));
-            serverSender.connect();
+            InetAddress ip = InetAddress.getByName(serverList.get(position).getIp());
+            serverDetector.sendConfirm(ip, serverList.get(position).getPort());
+            serverSender.setIP(InetAddress.getByName(ip.getHostAddress()));
+            if (serverSender.connect()) {
+                Log.i("MainActivity", "ServerSender is connected!");
+                startActivity(new Intent(MainActivity.this, NotiListActivity.class));
+            } else {
+                Log.e("MainActivity", "Unable to connect...");
+            }
         } catch (UnknownHostException e) {
             Log.e("MainActivity", "Unknown Host");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        startActivity(new Intent(MainActivity.this, NotiListActivity.class));
     }
 }

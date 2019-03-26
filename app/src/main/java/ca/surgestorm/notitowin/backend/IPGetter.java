@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,8 @@ public class IPGetter {
      * @param useIPv4 true=return ipv4, false=return ipv6
      * @return address or empty string
      */
-    public static String getInternalIP(boolean useIPv4) {
+    public static String[] getInternalIP(boolean useIPv4) {
+        ArrayList<String> sArr = new ArrayList<>();
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface intf : interfaces) {
@@ -46,11 +48,11 @@ public class IPGetter {
 
                         if (useIPv4) {
                             if (isIPv4)
-                                return sAddr;
+                                sArr.add(sAddr);
                         } else {
                             if (!isIPv4) {
                                 int delim = sAddr.indexOf('%'); // drop ip6 zone suffix
-                                return delim < 0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
+                                sArr.add(delim < 0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase());
                             }
                         }
                     }
@@ -58,6 +60,6 @@ public class IPGetter {
             }
         } catch (Exception ignored) {
         } // for now eat exceptions
-        return "";
+        return sArr.toArray(new String[0]);
     }
 }

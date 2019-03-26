@@ -9,9 +9,9 @@ import ca.surgestorm.notitowin.R;
 
 public class Server {
     private String ip;
-    private int connectionMethod, previewImage, port;
+    private int connectionMethod, port;
     private String serverName;
-    private String os;
+    private String osName, osVersion;
 
 
     /*
@@ -22,13 +22,13 @@ public class Server {
      * @param os The server's OS (Only WIN10 for now)
 
      */
-    public Server(String ip, int port, int connectionMethod, String serverName, String os) {
+    public Server(String ip, int port, int connectionMethod, String serverName, String osName, String osVersion) {
         this.ip = ip;
         this.port = port;
         this.connectionMethod = connectionMethod;
-//        this.previewImage = previewImage;
         this.serverName = serverName;
-        this.os = os;
+        this.osName = osName;
+        this.osVersion = osVersion;
     }
 
     //@return returns the server's IP
@@ -50,26 +50,39 @@ public class Server {
         return this.serverName;
     }
 
-    //@return returns the servers OS (Should be "WIN10")
-    public String getOs() {
-        return "Windows" + " " + this.os;
-    }
-
     @NonNull
     public static Server jsonConverter(JSONObject json) throws JSONException {
-        String ip, serverName, os;
+        String ip, serverName, osName, osVersion;
         int port, connectionMethod, previewImage;
         ip = (String) json.get("ip");
         port = (int) json.get("port");
         connectionMethod = (int) json.get("connectionMethod");
-//        previewImage = json.getInt("previewImage");
         serverName = (String) json.get("serverName");
-        os = (String) json.get("os");
-        return new Server(ip, port, connectionMethod, serverName, os);
+        osName = (String) json.get("osName");
+        osVersion = (String) json.get("osVersion");
+        return new Server(ip, port, connectionMethod, serverName, osName, osVersion);
+    }
+
+    //@return returns the servers OS (Should be "WIN10")
+    public String getOs() {
+        return this.osName + " " + this.osVersion;
     }
 
     public int getPreviewImage() {
-        return R.drawable.windows10;
+        switch (osName.toLowerCase()) {
+            case "windows":
+                if (osVersion.equals("10")) {
+                    return R.drawable.windows10;
+                } else {
+                    return R.drawable.windows7;
+                }
+            case "linux":
+                return R.drawable.linux;
+            case "mac":
+                return R.drawable.apple;
+            default:
+                return R.drawable.windows7;
+        }
     }
 
     public int getPort() {
@@ -81,9 +94,9 @@ public class Server {
         json.put("ip", this.ip);
         json.put("port", this.port);
         json.put("connectionMethod", this.connectionMethod);
-//        json.set("previewImage", this.previewImage);
         json.put("serverName", this.serverName);
-        json.put("os", this.os);
+        json.put("osName", this.osName);
+        json.put("osVersion", this.osVersion);
         return json;
     }
 
