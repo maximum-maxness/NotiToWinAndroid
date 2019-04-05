@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -120,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
                 startActivity(new Intent(MainActivity.this, NotiListActivity.class));
             } else {
                 Log.e("MainActivity", "Unable to connect...");
+                Toast toast = Toast.makeText(this, "Try Again, Error Connecting", Toast.LENGTH_SHORT);
+                toast.show();
             }
         } catch (UnknownHostException e) {
             Log.e("MainActivity", "Unknown Host");

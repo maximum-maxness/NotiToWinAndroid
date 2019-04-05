@@ -14,6 +14,7 @@ import android.util.Log;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ca.surgestorm.notitowin.backend.DefaultNotification;
+import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.ui.MainActivity;
 import ca.surgestorm.notitowin.ui.NotiListActivity;
 
@@ -153,6 +155,14 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         }
         if (!NotiListActivity.refreshButtonPressed) {
             NotiListActivity.updateNotiArray(activeNotis);
+        }
+
+        JSONConverter json = dn.populateJSON();
+        String s = json.serialize();
+        try {
+            MainActivity.serverSender.sendJson(s);
+        } catch (IOException e) {
+            Log.e("ActiveNotiProcesser", "Error Sending Notification! " + dn.getId());
         }
 
     }

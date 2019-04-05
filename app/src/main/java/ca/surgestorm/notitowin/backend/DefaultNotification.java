@@ -20,7 +20,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
     private boolean isClearable, isRepliable;
     private String id, packageName, appName, title, text, time, dataLoadHash, requestReplyId;
     private Icon largeIcon, smallIcon;
-    private long timeStamp;
+    private long timeStamp, dataLoadSize;
 
     public DefaultNotification(String id, long timeStamp) {
         this.id = id;
@@ -118,6 +118,14 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         return bmpData;
     }
 
+    private String getLargeIconFileSize() {
+        return DataLoad.humanReadable(bitmapToByteArray(getLargeIconBitmap()).length, false);
+    }
+
+    private String getSmallIconFileSize() {
+        return DataLoad.humanReadable(bitmapToByteArray(getSmallIconBitmap()).length, false);
+    }
+
     @Override
     public Icon getLargeIcon() {
         return this.largeIcon;
@@ -125,7 +133,11 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
 
     public void setLargeIcon(Icon largeIcon) {
         this.largeIcon = largeIcon;
-//        if (this.largeIcon == null) Log.e("DefaultNotification", "Large Icon is Missing/Null!");
+        if (this.largeIcon == null) {
+            Log.w("DefaultNotification", "Large Icon is Missing/Null!");
+        } else {
+            Log.i("DefaultNotification", "Large Icon Filesize for App: " + getAppName() + " is: " + getLargeIconFileSize());
+        }
 
     }
 
@@ -136,6 +148,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
     private InputStream getLargeIconInputStream() {
         byte[] data = bitmapToByteArray(getLargeIconBitmap());
         DataLoad dl = new DataLoad(data);
+        this.dataLoadSize = bitmapToByteArray(getLargeIconBitmap()).length;
         this.dataLoadHash = DataLoad.getChecksum(data);
         return dl.getInputStream();
     }
@@ -143,6 +156,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
     private InputStream getSmallIconInputStream() {
         byte[] data = bitmapToByteArray(getSmallIconBitmap());
         DataLoad dl = new DataLoad(data);
+        this.dataLoadSize = bitmapToByteArray(getSmallIconBitmap()).length;
         this.dataLoadHash = DataLoad.getChecksum(data);
         return dl.getInputStream();
     }
@@ -168,7 +182,11 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
 
     public void setSmallIcon(Icon smallIcon) {
         this.smallIcon = smallIcon;
-        if (this.smallIcon == null) Log.e("DefaultNotification", "Small Icon is Missing/Null!");
+        if (this.smallIcon == null) {
+            Log.w("DefaultNotification", "Small Icon is Missing/Null!");
+        } else {
+            Log.i("DefaultNotification", "Small Icon Filesize for App: " + getAppName() + " is: " + getSmallIconFileSize());
+        }
     }
 
     public void setTime(String time) {
@@ -195,6 +213,8 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         if (getIconInputStream() != null && this.dataLoadHash != null) {
             json.set("hasDataLoad", true);
             json.set("dataLoadHash", this.dataLoadHash);
+            json.set("dataLoadSize", this.dataLoadSize);
+
         } else {
             json.set("hasDataLoad", false);
         }
