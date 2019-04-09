@@ -60,6 +60,7 @@ public class ServerSender {
     public String receiveMessage() throws IOException {
         Log.i("ServerSender", "Waiting for Packet...");
         String message = this.dataInputStream.readUTF();
+        if(message == null) return receiveMessage();
         Log.i("ServerSender", "Received Message: " + message);
         return message;
     }
@@ -145,6 +146,7 @@ public class ServerSender {
             message = receiveMessage();
         } catch (IOException e) {
             Log.e("ServerSender", "Couldn't Receive Message. Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
         }
         if (message == null) {
             Log.e("ServerSender", "Message Received is null!");
