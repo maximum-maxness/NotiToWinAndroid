@@ -126,6 +126,14 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         return DataLoad.humanReadable(bitmapToByteArray(getSmallIconBitmap()).length, false);
     }
 
+    public byte[] getIconByte(){
+        if(this.largeIcon != null){
+            return bitmapToByteArray(getLargeIconBitmap());
+        } else {
+            return bitmapToByteArray(getSmallIconBitmap());
+        }
+    }
+
     @Override
     public Icon getLargeIcon() {
         return this.largeIcon;

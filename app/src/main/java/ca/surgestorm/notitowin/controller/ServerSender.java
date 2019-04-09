@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.PacketType;
 
@@ -60,9 +61,14 @@ public class ServerSender {
     public String receiveMessage() throws IOException {
         Log.i("ServerSender", "Waiting for Packet...");
         String message = this.dataInputStream.readUTF();
-        if(message == null) return receiveMessage();
+        if (message == null) return receiveMessage();
         Log.i("ServerSender", "Received Message: " + message);
         return message;
+    }
+
+    private void sendIcon(byte[] data) throws IOException {
+        this.dataOutputStream.write(data, 0, data.length);
+        this.dataOutputStream.flush();
     }
 
     public InetAddress getIP() {
@@ -115,7 +121,8 @@ public class ServerSender {
         this.outputStream.close();
     }
 
-    public void sendJson(String json) throws IOException {
+    public void sendNoti(DefaultNotification dn) throws IOException {
+        String json = dn.populateJSON().serialize();
         if (this.socket.isConnected()) {
             sendMessage(new JSONConverter(PacketType.NOTI_REQUEST).serialize());
             System.out.println("Sent Request!");
@@ -123,10 +130,13 @@ public class ServerSender {
                 System.out.println("Got Reply!");
                 sendMessage(json);
                 Log.i("ServerSender", "Sent: " + json);
-                if (!waitForServerReady()) {
-                    Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
-                } else {
+                if(serverWantsIcon())
+                    sendIcon(dn.getIconByte());
+                Log.i("ServerSender", "Sent DataLoad!");
+                if (waitForServerReady()) {
                     Log.i("ServerSender", "Sent JSON Successfully!");
+                } else {
+                    Log.e("ServerSender", "Server Did Not Reply Ready after sending json!");
                 }
             } else {
                 Log.e("ServerSender", "Server did not reply ready after sending noti request!");
@@ -138,6 +148,26 @@ public class ServerSender {
         }
     }
 
+    private boolean serverWantsIcon() {
+        String message = null;
+        try {
+            message = receiveMessage();
+        } catch (IOException e) {
+            Log.e("ServerSender", "Couldn't Receive Message. Error: " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        if (message == null) {
+            Log.e("ServerSender", "Message Received is null!");
+            return false;
+        }
+        JSONConverter json = JSONConverter.unserialize(message);
+        Log.i("ServerSender", "Received: " + message);
+        String type = json.getType();
+        Log.i("ServerSender", "JSON Type:" + type);
+        boolean b = json.getBoolean("dataLoadRequest", false);
+        Log.i("ServerSender", "DataLoad request is: " + b);
+        return b;
+    }
 
     private boolean waitForServerReady() {
         Log.i("ServerSender", "Waiting for Server Ready...");

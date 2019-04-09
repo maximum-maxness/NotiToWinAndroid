@@ -156,11 +156,8 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         if (!NotiListActivity.refreshButtonPressed) {
             NotiListActivity.updateNotiArray(activeNotis);
         }
-
-        JSONConverter json = dn.populateJSON();
-        String s = json.serialize();
         try {
-            MainActivity.serverSender.sendJson(s);
+            MainActivity.serverSender.sendNoti(dn);
         } catch (IOException e) {
             Log.e("ActiveNotiProcesser", "Error Sending Notification! " + dn.getId());
         }
