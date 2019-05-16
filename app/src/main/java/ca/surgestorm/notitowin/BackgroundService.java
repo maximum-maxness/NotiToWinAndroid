@@ -34,13 +34,16 @@ import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkProvide
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 import ca.surgestorm.notitowin.ui.MainActivity;
 import ca.surgestorm.notitowin.ui.NotiListActivity;
+import ca.surgestorm.notitowin.ui.ServerListUpdater;
 
 @SuppressLint("Registered")
 public class BackgroundService extends Service {
     private final static ArrayList<InstanceCallback> callbacks = new ArrayList<>();
     private final static Lock mutex = new ReentrantLock(true);
-    public static BackgroundService instance;
     private final ArrayList<LANLinkProvider> linkProviders = new ArrayList<>();
+
+
+    private ServerListUpdater updater;
     private final ConcurrentHashMap<String, Server> servers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, DeviceListChangedCallback> serverListChangedCallbacks =
             new ConcurrentHashMap<>();
@@ -134,6 +137,14 @@ public class BackgroundService extends Service {
 
     private static void Start(Context c) {
         RunCommand(c, null);
+    }
+
+    public ServerListUpdater getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(ServerListUpdater updater) {
+        this.updater = updater;
     }
 
     public static void RunCommand(final Context c, final InstanceCallback callback) {
@@ -240,7 +251,7 @@ public class BackgroundService extends Service {
         for (DeviceListChangedCallback callback : serverListChangedCallbacks.values()) {
             callback.onDeviceListChanged();
         }
-        MainActivity.updater.notifyDataSetChanged();
+        updater.notifyDataSetChanged();
     }
 
     public void addConnectionListener(LANLinkProvider.ConnectionReceiver cr) {
@@ -267,7 +278,7 @@ public class BackgroundService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        instance = this;
+        BackgroundService instance = this;
 
         // Register screen on listener
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
