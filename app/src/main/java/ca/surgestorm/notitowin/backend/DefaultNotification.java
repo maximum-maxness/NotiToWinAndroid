@@ -1,6 +1,5 @@
 package ca.surgestorm.notitowin.backend;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -15,7 +14,7 @@ import java.io.InputStream;
 
 import ca.surgestorm.notitowin.ui.MainActivity;
 
-public class DefaultNotification extends Notification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
+public class DefaultNotification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
 
     private boolean isClearable, isRepliable;
     private String id, packageName, appName, title, text, time, dataLoadHash, requestReplyId;
@@ -134,7 +133,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         }
     }
 
-    @Override
+    //    @Override
     public Icon getLargeIcon() {
         return this.largeIcon;
     }
@@ -179,7 +178,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
         return inputStream;
     }
 
-    @Override
+    //    @Override
     public Icon getSmallIcon() {
         return this.smallIcon;
     }
@@ -211,7 +210,7 @@ public class DefaultNotification extends Notification { //TODO Rewrite DefaultNo
     }
 
     public JSONConverter populateJSON() {
-        JSONConverter json = new JSONConverter(PacketType.NOTIFICATION);
+        JSONConverter json = new JSONConverter(PacketTypeOLD.NOTIFICATION);
         json.set("id", this.id);
         json.set("isClearable", this.isClearable);
         json.set("appName", this.appName == null ? this.packageName : this.appName);

@@ -14,7 +14,6 @@ import android.util.Log;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,8 +22,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
-import ca.surgestorm.notitowin.backend.JSONConverter;
+import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
 import ca.surgestorm.notitowin.ui.NotiListActivity;
 
@@ -38,6 +38,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     private Map<String, NotificationReply> pendingIntents;
     private boolean isReady = false;
     private Set<String> currentNotis;
+    private Server server;
 
     private static String getStringFromExtra(Bundle extras, String search) { //TODO Add Repliable Notification Support, as Well as Media Player Support (Spotify, Google Music)
         Object extra = extras.get(search);
@@ -156,12 +157,9 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         if (!NotiListActivity.refreshButtonPressed) {
             NotiListActivity.updateNotiArray(activeNotis);
         }
-        try {
-            MainActivity.serverSender.sendNoti(dn);
-        } catch (IOException e) {
-            Log.e("ActiveNotiProcesser", "Error Sending Notification! " + dn.getId());
-        }
-
+        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+            service.sendGlobalPacket(dn.populateJSON());
+        });
     }
 
     public void updateTimes() {

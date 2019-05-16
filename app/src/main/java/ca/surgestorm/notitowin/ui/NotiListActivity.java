@@ -9,9 +9,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
+import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.backend.JSONConverter;
@@ -65,7 +65,6 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         updater = new NotiListUpdater(MainActivity.getAppContext(), defaultNotifications, this);
         recyclerView.setAdapter(updater);
-        configureRefreshButton(anp);
     }
 
     private void configureGoToMainButton(ActiveNotiProcessor anp) {
@@ -80,43 +79,29 @@ public class NotiListActivity extends AppCompatActivity implements RecyclerViewC
 
     public void goBackToMain() {
         anp.onDestroy();
-        try {
-            MainActivity.serverSender.disconnect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        BackgroundService.RunCommand(MainActivity.getAppContext(), BackgroundService::cleanDevices);
         startActivity(new Intent(NotiListActivity.this, MainActivity.class));
-    }
-
-    private void configureRefreshButton(ActiveNotiProcessor anp) {
-        Button refreshButton = findViewById(R.id.refreshButton);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                anp.updateTimes();
-                updater.notifyDataSetChanged();
-                refreshButtonPressed = true;
-            }
-        });
     }
 
     @Override
     public void recyclerViewListClicked(View v, int position) {
 //        MainActivity.serverConnector.setJson(json);
 //        MainActivity.serverConnector.sendJSONToServer();
-        try {
+//        try {
             JSONConverter json = defaultNotifications.get(position).populateJSON();
             String s = json.serialize();
             Log.i("NotiToWin", "JSON Export: " + s);
-            MainActivity.serverSender.sendNoti(defaultNotifications.get(position));
-//            CharSequence data = s;
+        BackgroundService.RunCommand(this, service -> {
+            service.sendGlobalPacket(json);
+        });
+        //            CharSequence data = s;
 //            CharSequence description = "JSON Export";
 //            ClipData cd = ClipData.newPlainText(description, data);
 //            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 //            clipboard.setPrimaryClip(cd);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 //        Toast.makeText(MainActivity.getAppContext(), "JSON for Notification " + (position + 1) + " Copied to Clipboard", Toast.LENGTH_SHORT).show();
 

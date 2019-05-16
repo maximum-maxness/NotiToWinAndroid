@@ -5,7 +5,7 @@ import org.json.JSONException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PacketType {
+public class PacketTypeOLD {
     public static final String CLIENT_PAIR_REQUEST = "CLIENT_PAIR_REQUEST";
     public static final String SERVER_PAIR_RESPONSE = "SERVER_PAIR_RESPONSE";
     public static final String CLIENT_PAIR_CONFIRM = "CLIENT_PAIR_CONFIRM";
