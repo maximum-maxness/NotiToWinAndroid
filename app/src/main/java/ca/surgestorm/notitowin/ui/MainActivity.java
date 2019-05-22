@@ -41,7 +41,7 @@ public class MainActivity extends Activity implements RecyclerViewClickListener 
         for (String s : IPGetter.getInternalIP(true))
             Log.i("INTERNAL IP", s);
 
-        setContentFragment(new ServerListFragment());
+//        setContentFragment(new ServerListFragment());
 
 //        configureRefreshButton();
 //        configureNextButton();
