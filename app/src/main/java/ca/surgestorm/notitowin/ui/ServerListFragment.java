@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.util.Objects;
+
 import ca.surgestorm.notitowin.R;
 
 public class ServerListFragment extends Fragment {
@@ -18,10 +20,15 @@ public class ServerListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Objects.requireNonNull(mainActivity.getActionBar()).setTitle("Servers on LAN");
         rootView = inflater.inflate(R.layout.serverlist_activity, container, false);
-        View listView = rootView.findViewById(R.id.serverList);
         swipeRefreshLayout = rootView.findViewById(R.id.refresh_list_layout);
         swipeRefreshLayout.setOnRefreshListener(this::refreshServerList);
+//        View listView = rootView.findViewById(R.id.serverList);
+//        TextView headerText = new TextView(inflater.getContext());
+//        headerText.setText("List of available servers!");
+//        headerText.setPadding(0, (int) (16 * getResources().getDisplayMetrics().density), 0, (int) (12 * getResources().getDisplayMetrics().density));
+//        ((RecyclerView) listView).setContentDescription(headerText);
         return rootView;
     }
 

@@ -3,6 +3,7 @@ package ca.surgestorm.notitowin.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,7 +42,7 @@ public class MainActivity extends Activity implements RecyclerViewClickListener 
         for (String s : IPGetter.getInternalIP(true))
             Log.i("INTERNAL IP", s);
 
-//        setContentFragment(new ServerListFragment());
+        setContentFragment(new ServerListFragment());
 
 //        configureRefreshButton();
 //        configureNextButton();
@@ -49,13 +50,13 @@ public class MainActivity extends Activity implements RecyclerViewClickListener 
 //        recyclerView = findViewById(R.id.recyclerView);
 //        recyclerView.setHasFixedSize(true);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//        Intent i = new Intent(this, BackgroundService.class);
-//        appContext.startForegroundService(i);
-//        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
-//            service.changePersistentNotificationVisibility(true);
-//            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
-//            recyclerView.setAdapter(service.getUpdater());
-//        });
+        Intent i = new Intent(this, BackgroundService.class);
+        appContext.startForegroundService(i);
+        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+            service.changePersistentNotificationVisibility(true);
+            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
+            recyclerView.setAdapter(service.getUpdater());
+        });
     }
 
     private void configureRefreshButton() { //TODO Different Threads for different activities
