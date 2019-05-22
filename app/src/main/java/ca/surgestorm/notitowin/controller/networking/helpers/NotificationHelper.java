@@ -6,9 +6,11 @@ import android.content.Context;
 
 public class NotificationHelper {
 
+    public static NotificationChannel persistentChannel;
+
     public static void initChannels(Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationChannel persistentChannel = new NotificationChannel(
+        persistentChannel = new NotificationChannel(
                 "persistent",
                 "Persistent Notification Channel",
                 NotificationManager.IMPORTANCE_MIN);

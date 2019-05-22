@@ -1,13 +1,14 @@
 package ca.surgestorm.notitowin.ui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
@@ -17,7 +18,7 @@ import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
-public class NotiListActivity extends AppCompatActivity implements RecyclerViewClickListener {
+public class NotiListActivity extends Activity implements RecyclerViewClickListener {
 
     public static boolean refreshButtonPressed = false;
     private RecyclerView recyclerView;

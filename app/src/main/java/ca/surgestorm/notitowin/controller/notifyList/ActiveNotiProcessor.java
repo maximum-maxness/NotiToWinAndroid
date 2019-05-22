@@ -1,14 +1,13 @@
 package ca.surgestorm.notitowin.controller.notifyList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.util.Log;
 
@@ -124,7 +123,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         if ((notification.flags & Notification.FLAG_FOREGROUND_SERVICE) != 0
                 || (notification.flags & Notification.FLAG_LOCAL_ONLY) != 0
                 || (notification.flags & Notification.FLAG_ONGOING_EVENT) != 0
-                || (notification.flags & NotificationCompat.FLAG_GROUP_SUMMARY) != 0) {
+                || (notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0) {
             return; //If the notification is of any of the types we do not want, then skip over it
         }
 

@@ -18,9 +18,10 @@
 
             <ImageView
                 android:id="@+id/appIcon"
-                android:layout_width="48px"
-                android:layout_height="48px"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:padding="4dp"
+                android:contentDescription="@string/todo"
                 android:scaleType="fitXY" />
 
             <ImageView
@@ -28,16 +29,18 @@
                 android:layout_width="128dp"
                 android:layout_height="128dp"
                 android:layout_below="@+id/appIcon"
+                android:contentDescription="@string/todo"
                 android:padding="4dp" />
 
             <TextView
                 android:id="@+id/appName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_toRightOf="@id/appIcon"
+                android:layout_marginStart="4dp"
+                android:layout_toEndOf="@id/appIcon"
                 android:text="Messages"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:contentDescription="@string/todo"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
                 android:textColor="@color/cardview_light_background" />
 
             <TextView
@@ -45,9 +48,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_toRightOf="@+id/appName"
+                android:layout_toEndOf="@+id/appName"
                 android:text="•"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:contentDescription="@string/todo"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
                 android:textColor="@color/cardview_light_background" />
 
             <TextView
@@ -55,9 +59,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_toRightOf="@+id/dot"
+                android:layout_toEndOf="@+id/dot"
                 android:text="now"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                android:contentDescription="@string/todo"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
                 android:textColor="@color/cardview_light_background" />
 
             <TextView
@@ -65,22 +70,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/title"
-                android:layout_toRightOf="@+id/largeIcon"
+                android:layout_toEndOf="@+id/largeIcon"
                 android:padding="4dp"
                 android:text="Hullo"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
-                android:textColor="@color/cardview_light_background" />
+                android:contentDescription="@string/todo"
+                android:textAppearance="@style/TextAppearance.Compat.Notification"
+                android:textColor="@color/cardview_dark_background" />
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/largeIcon"
-                android:layout_toRightOf="@+id/largeIcon"
+                android:layout_toEndOf="@+id/largeIcon"
                 android:padding="4dp"
                 android:text="Max"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+                android:contentDescription="@string/todo"
+                android:textAppearance="@style/TextAppearance.Compat.Notification"
                 android:textColor="@color/cardview_light_background" />
+
 
         </RelativeLayout>
     </android.support.v7.widget.CardView>

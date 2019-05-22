@@ -1,13 +1,14 @@
 package ca.surgestorm.notitowin.ui;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collection;
 
@@ -35,7 +36,7 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
     @Override
     public ServerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(listContext);
-        View view = inflater.inflate(R.layout.layout_serverlist, null);
+        View view = inflater.inflate(R.layout.serverlist_card, null);
         return new ServerViewHolder(view);
     }
 

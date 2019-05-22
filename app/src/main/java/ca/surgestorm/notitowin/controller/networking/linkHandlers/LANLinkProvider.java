@@ -43,7 +43,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
     }
 
-    static ServerSocket openTCPServerOnFreePort() throws IOException {
+    private static ServerSocket openTCPServerOnFreePort() throws IOException {
         System.out.println("Opening TCP Server On Free Port.");
         int tcpPort = LANLinkProvider.MIN_PORT;
         while (tcpPort <= MAX_PORT) {

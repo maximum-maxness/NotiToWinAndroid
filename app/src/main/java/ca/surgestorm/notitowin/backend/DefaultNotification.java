@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
 import ca.surgestorm.notitowin.ui.MainActivity;
 
 public class DefaultNotification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
@@ -210,7 +211,7 @@ public class DefaultNotification { //TODO Rewrite DefaultNotification Class so t
     }
 
     public JSONConverter populateJSON() {
-        JSONConverter json = new JSONConverter(PacketTypeOLD.NOTIFICATION);
+        JSONConverter json = new JSONConverter(PacketType.NOTIFICATION);
         json.set("id", this.id);
         json.set("isClearable", this.isClearable);
         json.set("appName", this.appName == null ? this.packageName : this.appName);

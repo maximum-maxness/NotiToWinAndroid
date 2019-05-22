@@ -13,7 +13,6 @@ import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -189,12 +188,11 @@ public class BackgroundService extends Service {
     private Notification createForegroundNotification() {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "persistent");
+        Notification.Builder notification = new Notification.Builder(this, NotificationHelper.persistentChannel.getId());
         notification
                 .setSmallIcon(R.drawable.ic_launcher_foreground) //TODO Make actual icon
                 .setOngoing(true)
                 .setContentIntent(pi)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setShowWhen(false)
                 .setAutoCancel(false);
         notification.setGroup("BackgroundService");

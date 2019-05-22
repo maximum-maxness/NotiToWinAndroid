@@ -1,24 +1,22 @@
 package ca.surgestorm.notitowin.ui;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+
+import androidx.annotation.RequiresApi;
+import androidx.recyclerview.widget.RecyclerView;
 
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.Server;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewClickListener {
+public class MainActivity extends Activity implements RecyclerViewClickListener {
 
     RecyclerView recyclerView;
     private static Context appContext;
@@ -33,8 +31,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.serverlist_activity);
-
+        setContentView(R.layout.layout_main);
+        setContentFragment(new ServerListFragment());
         appContext = getApplicationContext();
 
 //        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -43,30 +41,39 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         for (String s : IPGetter.getInternalIP(true))
             Log.i("INTERNAL IP", s);
 
-        configureRefreshButton();
+        setContentFragment(new ServerListFragment());
+
+//        configureRefreshButton();
 //        configureNextButton();
 
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        Intent i = new Intent(this, BackgroundService.class);
-        appContext.startForegroundService(i);
-        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
-            service.changePersistentNotificationVisibility(true);
-            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
-            recyclerView.setAdapter(service.getUpdater());
-        });
+//        recyclerView = findViewById(R.id.recyclerView);
+//        recyclerView.setHasFixedSize(true);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        Intent i = new Intent(this, BackgroundService.class);
+//        appContext.startForegroundService(i);
+//        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+//            service.changePersistentNotificationVisibility(true);
+//            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
+//            recyclerView.setAdapter(service.getUpdater());
+//        });
     }
 
     private void configureRefreshButton() { //TODO Different Threads for different activities
-        Button refreshButton = findViewById(R.id.refreshButton);
-        refreshButton.setOnClickListener(v -> {
-            Log.i("MainActivity", "Refresh Button Clicked!");
-            BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
-                service.cleanDevices();
-                service.getUpdater().notifyDataSetChanged();
-            });
-        });
+//        Button refreshButton = findViewById(R.id.refreshButton);
+//        refreshButton.setOnClickListener(v -> {
+//            Log.i("MainActivity", "Refresh Button Clicked!");
+//            BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+//                service.cleanDevices();
+//                service.getUpdater().notifyDataSetChanged();
+//            });
+//        });
+    }
+
+    private void setContentFragment(Fragment fragment) {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
     }
 
     @Override
@@ -86,4 +93,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         });
 
     }
+
+
 }
