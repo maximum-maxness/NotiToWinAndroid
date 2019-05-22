@@ -1,16 +1,14 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import ca.surgestorm.notitowin.backend.JSONConverter;
+import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.backend.helpers.PacketType;
+
 import java.security.KeyFactory;
-import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import ca.surgestorm.notitowin.backend.JSONConverter;
-import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
-import ca.surgestorm.notitowin.controller.networking.helpers.RSAHelper;
 
 public class LANLinkHandler { // TODO Finish and Implement
 
@@ -105,17 +103,6 @@ public class LANLinkHandler { // TODO Finish and Implement
     private JSONConverter createPairPacket() {
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", true);
-        String pubKeyStr = null;
-        try {
-            PublicKey pubKey = RSAHelper.getPublicKey();
-            pubKeyStr = pubKey.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            pubKeyStr = "";
-        }
-        String publicKeyFormatted =
-                "-----BEGIN PUBLIC KEY-----\n" + pubKeyStr.trim() + "\n-----END PUBLIC KEY-----\n";
-        json.set("publicKey", publicKeyFormatted);
         return json;
     }
 

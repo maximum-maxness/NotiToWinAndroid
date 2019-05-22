@@ -33,61 +33,61 @@
                 android:padding="4dp" />
 
             <TextView
-                android:id="@+id/appName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_toEndOf="@id/appIcon"
-                android:text="Messages"
-                android:contentDescription="@string/todo"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-                android:textColor="@color/cardview_light_background" />
+                    android:id="@+id/appName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_toEndOf="@id/appIcon"
+                    android:text="@string/app_name"
+                    android:contentDescription="@string/todo"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                    android:textColor="@color/cardview_light_background" />
 
             <TextView
-                android:id="@+id/dot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_toEndOf="@+id/appName"
-                android:text="•"
-                android:contentDescription="@string/todo"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-                android:textColor="@color/cardview_light_background" />
+                    android:id="@+id/dot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_toEndOf="@+id/appName"
+                    android:text="@string/dot"
+                    android:contentDescription="@string/todo"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                    android:textColor="@color/cardview_light_background" />
 
             <TextView
-                android:id="@+id/time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_toEndOf="@+id/dot"
-                android:text="now"
-                android:contentDescription="@string/todo"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-                android:textColor="@color/cardview_light_background" />
+                    android:id="@+id/time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_toEndOf="@+id/dot"
+                    android:text="@string/notification_time_placeholder"
+                    android:contentDescription="@string/todo"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                    android:textColor="@color/cardview_light_background" />
 
             <TextView
-                android:id="@+id/content"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/title"
-                android:layout_toEndOf="@+id/largeIcon"
-                android:padding="4dp"
-                android:text="Hullo"
-                android:contentDescription="@string/todo"
-                android:textAppearance="@style/TextAppearance.Compat.Notification"
-                android:textColor="@color/cardview_dark_background" />
+                    android:id="@+id/content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/title"
+                    android:layout_toEndOf="@+id/largeIcon"
+                    android:padding="4dp"
+                    android:text="@string/notification_text_placeholder"
+                    android:contentDescription="@string/todo"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification"
+                    android:textColor="@color/cardview_light_background"/>
 
             <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/largeIcon"
-                android:layout_toEndOf="@+id/largeIcon"
-                android:padding="4dp"
-                android:text="Max"
-                android:contentDescription="@string/todo"
-                android:textAppearance="@style/TextAppearance.Compat.Notification"
-                android:textColor="@color/cardview_light_background" />
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/largeIcon"
+                    android:layout_toEndOf="@+id/largeIcon"
+                    android:padding="4dp"
+                    android:text="@string/notification_title_placeholder"
+                    android:contentDescription="@string/todo"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification"
+                    android:textColor="@color/cardview_light_background" />
 
 
         </RelativeLayout>

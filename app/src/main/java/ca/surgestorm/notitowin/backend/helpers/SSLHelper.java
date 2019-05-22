@@ -1,5 +1,9 @@
-package ca.surgestorm.notitowin.controller.networking.helpers;
+package ca.surgestorm.notitowin.backend.helpers;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Base64;
 import org.spongycastle.asn1.x500.X500NameBuilder;
 import org.spongycastle.asn1.x500.style.BCStyle;
 import org.spongycastle.cert.X509CertificateHolder;
@@ -10,58 +14,38 @@ import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.operator.ContentSigner;
 import org.spongycastle.operator.jcajce.JcaContentSignerBuilder;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import javax.net.ssl.*;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import java.util.Objects;
 
 public class SSLHelper {
-    public static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
+    private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
     public static X509Certificate certificate;
 
-    public static void initCertificate() {
-        String localCertificateFile = FileHelper.getStorePath() + "cert" + ".pem";
-
+    public static void initCertificate(Context context) {
         PrivateKey privKey;
         PublicKey pubKey;
 
         try {
-            privKey = RSAHelper.getPrivateKey();
-            pubKey = RSAHelper.getPublicKey();
+            privKey = RSAHelper.getPrivateKey(context);
+            pubKey = RSAHelper.getPublicKey(context);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
-
-        if (!FileHelper.fileExists(localCertificateFile)) {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        if (!settings.contains("certificate")) {
             try {
                 X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
                 InetAddress myHost = InetAddress.getLocalHost();
@@ -84,17 +68,19 @@ public class SSLHelper {
                 );
                 ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256WithRSAEncryption").setProvider(BOUNCY_CASTLE_PROVIDER).build(privKey);
                 certificate = new JcaX509CertificateConverter().setProvider(BOUNCY_CASTLE_PROVIDER).getCertificate(certificateBuilder.build(contentSigner));
-                String certStr = Base64.getEncoder().encodeToString(certificate.getEncoded());
-                saveToFile(localCertificateFile, certStr.getBytes());
+                SharedPreferences.Editor edit = settings.edit();
+                edit.putString("certificate", android.util.Base64.encodeToString(certificate.getEncoded(), 0));
+                edit.apply();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
             System.out.println("Already Have Cert!");
             try {
-                X509Certificate cert = readCertificate(localCertificateFile);
-                if (cert == null) return;
-                certificate = cert;
+                SharedPreferences globalSettings = PreferenceManager.getDefaultSharedPreferences(context);
+                byte[] certificateBytes = android.util.Base64.decode(globalSettings.getString("certificate", ""), 0);
+                X509CertificateHolder certificateHolder = new X509CertificateHolder(certificateBytes);
+                certificate = new JcaX509CertificateConverter().setProvider(BOUNCY_CASTLE_PROVIDER).getCertificate(certificateHolder);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -102,23 +88,23 @@ public class SSLHelper {
         }
     }
 
-    public static boolean certificateIsStored(String id) {
-        String certPath = createClientCertFilePath(id);
-        return FileHelper.fileExists(certPath);
+    public static boolean isCertificateStored(Context context, String deviceId) {
+        SharedPreferences devicePreferences = context.getSharedPreferences(deviceId, Context.MODE_PRIVATE);
+        String cert = devicePreferences.getString("certificate", "");
+        assert cert != null;
+        return !cert.isEmpty();
     }
 
-    private static String createClientCertFilePath(String id) {
-        return FileHelper.getStorePath() + id + ".pem";
-    }
-
-    private static SSLContext getSSLContext(String clientID, boolean deviceHasBeenPaired) {
+    private static SSLContext getSSLContext(Context context, String clientID, boolean deviceHasBeenPaired) {
         try {
-            PrivateKey privKey = RSAHelper.getPrivateKey();
+            PrivateKey privKey = RSAHelper.getPrivateKey(context);
 
             X509Certificate clientCert = null;
             if (deviceHasBeenPaired) {
-                X509Certificate cert = readCertificate(createClientCertFilePath(clientID));
-                if (cert != null) clientCert = cert;
+                SharedPreferences devicePreferences = context.getSharedPreferences(clientID, Context.MODE_PRIVATE);
+                byte[] certificateBytes = Base64.decode(devicePreferences.getString("certificate", ""), 0);
+                X509CertificateHolder certificateHolder = new X509CertificateHolder(certificateBytes);
+                clientCert = new JcaX509CertificateConverter().setProvider(BOUNCY_CASTLE_PROVIDER).getCertificate(certificateHolder);
             }
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -183,8 +169,8 @@ public class SSLHelper {
         }
     }
 
-    public static SSLSocket convertToSSLSocket(Socket socket, String clientID, boolean deviceHasBeenPaired, boolean clientMode) throws IOException {
-        SSLSocketFactory ssf = SSLHelper.getSSLContext(clientID, deviceHasBeenPaired).getSocketFactory();
+    public static SSLSocket convertToSSLSocket(Context context, Socket socket, String clientID, boolean deviceHasBeenPaired, boolean clientMode) throws IOException {
+        SSLSocketFactory ssf = Objects.requireNonNull(SSLHelper.getSSLContext(context, clientID, deviceHasBeenPaired)).getSocketFactory();
         SSLSocket sslSocket = (SSLSocket) ssf.createSocket(socket, socket.getInetAddress().getHostAddress(), socket.getPort(), true);
         SSLHelper.configureSSLSocket(sslSocket, deviceHasBeenPaired, clientMode);
         return sslSocket;
@@ -201,34 +187,6 @@ public class SSLHelper {
             formatter.format("%02x", hash[counter]);
             return formatter.toString();
         } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private static void saveToFile(String fileName, byte[] data) {
-        try (DataOutputStream dos = new DataOutputStream(
-                new BufferedOutputStream(
-                        new FileOutputStream(
-                                FileHelper.verifyFilePath(fileName).getAbsoluteFile()
-                        )))) {
-            dos.write(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static X509Certificate readCertificate(String path) throws Exception {
-        InputStream in = new FileInputStream(FileHelper.verifyFilePath(path).getAbsoluteFile());
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(in))) {
-            byte[] data = new byte[64000];
-            int read = 0;
-            read = dis.read(data);
-            byte[] trim = new byte[read];
-            System.arraycopy(data, 0, trim, 0, read);
-            byte[] certBytes = Base64.getDecoder().decode(trim);
-            return (X509Certificate) parseCertificate(certBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

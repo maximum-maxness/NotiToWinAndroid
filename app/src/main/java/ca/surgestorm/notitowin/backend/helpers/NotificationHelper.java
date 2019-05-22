@@ -1,8 +1,11 @@
-package ca.surgestorm.notitowin.controller.networking.helpers;
+package ca.surgestorm.notitowin.backend.helpers;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.preference.PreferenceManager;
 
 public class NotificationHelper {
 
@@ -25,5 +28,18 @@ public class NotificationHelper {
                     NotificationManager.IMPORTANCE_DEFAULT)
             );
         }
+    }
+
+    public static void setPersistentNotificationEnabled(Context context, boolean enabled) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putBoolean("persistentNotification", enabled).apply();
+    }
+
+    public static boolean isPersistentNotificationEnabled(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return true;
+        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("persistentNotification", false);
     }
 }

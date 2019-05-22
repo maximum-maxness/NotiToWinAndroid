@@ -1,10 +1,10 @@
-package ca.surgestorm.notitowin.controller.networking.helpers;
+package ca.surgestorm.notitowin.backend.helpers;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-
+import android.annotation.SuppressLint;
+import android.os.Build;
 import ca.surgestorm.notitowin.backend.JSONConverter;
+
+import java.util.UUID;
 
 public class PacketType {
     public static final String PAIR_REQUEST = "PAIR_REQUEST";
@@ -36,23 +36,27 @@ public class PacketType {
         JSONConverter json = new JSONConverter(IDENTITY_PACKET);
         String osName = System.getProperty("os.name");
         String osVer = System.getProperty("os.version");
-        json.set("clientName", getDeviceName());
-        json.set("clientID", getDeviceID());
+        String myName = getDeviceName();
+        String myID = getDeviceID();
+        System.out.println("My name is: " + myName + " My ID is: " + myID);
+        json.set("clientName", myName);
+        json.set("clientID", myID);
         json.set("osName", osName);
         json.set("osVersion", osVer);
         return json;
     }
 
-    public static String getDeviceName() {
-        InetAddress myHost = null;
-        try {
-            myHost = InetAddress.getLocalHost();
-            String deviceName = myHost.getHostName();
-            return deviceName;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return "";
-        }
+    @SuppressLint("MissingPermission")
+    private static String getDeviceName() {
+//        InetAddress myHost;
+//        try {
+//            myHost = InetAddress.getLocalHost();
+//            return myHost.getHostName();
+//        } catch (UnknownHostException e) {
+//            e.printStackTrace();
+//            return "";
+//        }
+        return Build.MANUFACTURER + " " + Build.MODEL;
     }
 
     public static String getDeviceID() {

@@ -3,23 +3,18 @@ package ca.surgestorm.notitowin.backend;
 import android.app.Notification;
 import android.content.Context;
 import android.content.SharedPreferences;
+import ca.surgestorm.notitowin.R;
+import ca.surgestorm.notitowin.backend.helpers.PacketType;
+import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
+import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
+import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
+import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import ca.surgestorm.notitowin.R;
-import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
-import ca.surgestorm.notitowin.controller.networking.helpers.RSAHelper;
-import ca.surgestorm.notitowin.controller.networking.helpers.SSLHelper;
-import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
-import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
 
 public class Server implements LANLink.PacketReceiver {
 
@@ -213,7 +208,7 @@ public class Server implements LANLink.PacketReceiver {
 
         try {
             System.out.println("Setting Private Key..");
-            PrivateKey privateKey = RSAHelper.getPrivateKey();
+            PrivateKey privateKey = RSAHelper.getPrivateKey(context);
             link.setPrivateKey(privateKey);
             System.out.println("Set Private Key Successfully!");
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package ca.surgestorm.notitowin.backend;
+package ca.surgestorm.notitowin.backend.helpers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class IPGetter {
-
+public class IPHelper {
     /**
      * Get external IP address from api.ipify.org
      *

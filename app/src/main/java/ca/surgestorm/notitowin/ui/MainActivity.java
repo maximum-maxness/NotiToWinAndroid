@@ -8,14 +8,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
-
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
-import ca.surgestorm.notitowin.backend.IPGetter;
 import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.backend.helpers.IPHelper;
+import ca.surgestorm.notitowin.backend.helpers.NotificationHelper;
 
 public class MainActivity extends Activity implements RecyclerViewClickListener {
 
@@ -39,7 +38,7 @@ public class MainActivity extends Activity implements RecyclerViewClickListener 
 //        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 //        StrictMode.setThreadPolicy(policy);
 
-        for (String s : IPGetter.getInternalIP(true))
+        for (String s : IPHelper.getInternalIP(true))
             Log.i("INTERNAL IP", s);
 
         setContentFragment(new ServerListFragment());
@@ -50,12 +49,13 @@ public class MainActivity extends Activity implements RecyclerViewClickListener 
 //        recyclerView = findViewById(R.id.recyclerView);
 //        recyclerView.setHasFixedSize(true);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        NotificationHelper.setPersistentNotificationEnabled(this, true);
         Intent i = new Intent(this, BackgroundService.class);
         appContext.startForegroundService(i);
         BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             service.changePersistentNotificationVisibility(true);
-            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
-            recyclerView.setAdapter(service.getUpdater());
+//            service.setUpdater(new ServerListUpdater(this, service.getDevices().values(), this));
+//            recyclerView.setAdapter(service.getUpdater());
         });
     }
 

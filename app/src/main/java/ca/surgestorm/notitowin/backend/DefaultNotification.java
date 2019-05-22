@@ -8,12 +8,11 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.util.Log;
+import ca.surgestorm.notitowin.backend.helpers.PacketType;
+import ca.surgestorm.notitowin.ui.MainActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-
-import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
-import ca.surgestorm.notitowin.ui.MainActivity;
 
 public class DefaultNotification { //TODO Rewrite DefaultNotification Class so that it properly extends Notification
 

@@ -1,5 +1,10 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import ca.surgestorm.notitowin.backend.JSONConverter;
+import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.backend.helpers.PacketType;
+import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,11 +17,6 @@ import java.nio.channels.NotYetConnectedException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-
-import ca.surgestorm.notitowin.backend.JSONConverter;
-import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
-import ca.surgestorm.notitowin.controller.networking.helpers.RSAHelper;
 
 public class LANLink {
 

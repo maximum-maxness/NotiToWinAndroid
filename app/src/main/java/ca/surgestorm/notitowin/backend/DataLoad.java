@@ -1,6 +1,8 @@
 package ca.surgestorm.notitowin.backend;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
+import ca.surgestorm.notitowin.backend.helpers.DataHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,6 +41,7 @@ public class DataLoad {
         return this.inputStream;
     }
 
+    @SuppressLint("DefaultLocale")
     public static String humanReadable(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";

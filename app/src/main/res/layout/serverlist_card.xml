@@ -23,49 +23,49 @@
 
 
             <TextView
-                android:id="@+id/serverName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_toEndOf="@id/previewImage"
-                android:text="maxs-laptop"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-                android:textColor="#444444"
-                android:textStyle="bold" />
+                    android:id="@+id/serverName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/previewImage"
+                    android:text="@string/server_name_placeholder"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                    android:textColor="#444444"
+                    android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/osDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/serverName"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="7dp"
-                android:layout_toEndOf="@id/previewImage"
-                android:text="Windows 10 18.09"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
+                    android:id="@+id/osDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/serverName"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="7dp"
+                    android:layout_toEndOf="@id/previewImage"
+                    android:text="@string/server_os_placeholder"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
 
             <TextView
-                android:id="@+id/serverIP"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/osDescription"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="7dp"
-                android:layout_toEndOf="@id/previewImage"
-                android:text="192.168.0.27"
-                android:textAppearance="@style/TextAppearance.Compat.Notification"
-                android:textColor="#666666" />
+                    android:id="@+id/serverIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/osDescription"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="7dp"
+                    android:layout_toEndOf="@id/previewImage"
+                    android:text="@string/server_ip_placeholder"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification"
+                    android:textColor="#666666" />
 
             <TextView
-                android:id="@+id/connectionMethod"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:text="LAN"
-                android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
+                    android:id="@+id/connectionMethod"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/server_connect_method_placeholder"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

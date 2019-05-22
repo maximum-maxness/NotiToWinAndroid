@@ -1,4 +1,4 @@
-package ca.surgestorm.notitowin.backend;
+package ca.surgestorm.notitowin.backend.helpers;
 
 public class DataHelper {
 

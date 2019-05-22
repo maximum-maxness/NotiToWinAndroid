@@ -1,30 +1,25 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import ca.surgestorm.notitowin.BackgroundService;
+import ca.surgestorm.notitowin.backend.JSONConverter;
+import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.backend.helpers.PacketType;
+import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
+import ca.surgestorm.notitowin.ui.MainActivity;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
-
-import ca.surgestorm.notitowin.BackgroundService;
-import ca.surgestorm.notitowin.backend.JSONConverter;
-import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.controller.networking.helpers.PacketType;
-import ca.surgestorm.notitowin.controller.networking.helpers.SSLHelper;
-import ca.surgestorm.notitowin.ui.MainActivity;
 
 public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
@@ -36,11 +31,12 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
     private ServerSocket tcpServer;
     private DatagramSocket udpServer;
+    private Context context;
 
     private boolean listening = false;
 
-    public LANLinkProvider() {
-
+    public LANLinkProvider(Context context) {
+        this.context = context;
     }
 
     private static ServerSocket openTCPServerOnFreePort() throws IOException {
@@ -108,7 +104,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
             final JSONConverter json = JSONConverter.unserialize(message);
             assert json != null;
             System.out.println("JSON Type is: " + json.getType());
-            final String serverID = json.getString("serverID");
+            final String serverID = json.getString("clientID");
             if (!json.getType().equals(PacketType.IDENTITY_PACKET)) {
                 return;
             } else {
@@ -148,8 +144,9 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
     private void identityPacketReceived(final JSONConverter json, final Socket socket, final LANLink.ConnectionStarted connectionStarted) {
         String myID = PacketType.getDeviceID();
-        final String serverID = json.getString("serverID");
+        final String serverID = json.getString("clientID");
         System.out.println("Identity Packet Received from Server ID: " + serverID);
+        System.out.println("My ID is: " + myID);
         if (serverID.equals(myID)) {
             System.err.println("The server ID matches my own ID!");
             return;
@@ -158,16 +155,18 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         final boolean serverMode = connectionStarted == LANLink.ConnectionStarted.Locally;
 
         try {
-            final SSLSocket sslSocket = SSLHelper.convertToSSLSocket(socket, serverID, SSLHelper.certificateIsStored(serverID), serverMode);
+            SharedPreferences preferences = context.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
+            boolean isDeviceTrusted = preferences.getBoolean(serverID, false);
+            final SSLSocket sslSocket = SSLHelper.convertToSSLSocket(context, socket, serverID, isDeviceTrusted, serverMode);
             sslSocket.addHandshakeCompletedListener(event -> {
                 String mode = serverMode ? "client" : "server";
                 try {
                     Certificate certificate = event.getPeerCertificates()[0];
                     json.set("certificate", Base64.getEncoder().encodeToString(certificate.getEncoded()));
-                    System.out.println("Handshake as " + mode + " successful with " + json.getString("serverName") + " secured with " + event.getCipherSuite());
+                    System.out.println("Handshake as " + mode + " successful with " + json.getString("clientName") + " secured with " + event.getCipherSuite());
                     addLink(json, sslSocket, connectionStarted);
                 } catch (Exception e) {
-                    System.err.println("Handshake as " + mode + " failed with " + json.getString("serverName"));
+                    System.err.println("Handshake as " + mode + " failed with " + json.getString("clientName"));
                     e.printStackTrace();
                     BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
                         Server server = service.getServer(serverID);
@@ -185,7 +184,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
                         sslSocket.startHandshake();
                     }
                 } catch (Exception e) {
-                    System.err.println("Handshake failed with " + json.getString("serverName"));
+                    System.err.println("Handshake failed with " + json.getString("clientName"));
                     e.printStackTrace();
                 }
             }).start();
@@ -195,7 +194,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
     }
 
     private void addLink(final JSONConverter json, Socket socket, LANLink.ConnectionStarted connectionStarted) throws IOException {
-        String serverID = json.getString("serverID");
+        String serverID = json.getString("clientID");
         LANLink currentLink = visibleServers.get(serverID);
         if (currentLink != null) {
             System.out.println("Re Using Same Link for Server ID: " + serverID);

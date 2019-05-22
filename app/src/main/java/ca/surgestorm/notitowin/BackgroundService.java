@@ -15,6 +15,17 @@ import android.os.Build;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
+import ca.surgestorm.notitowin.backend.JSONConverter;
+import ca.surgestorm.notitowin.backend.Server;
+import ca.surgestorm.notitowin.backend.helpers.NotificationHelper;
+import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
+import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
+import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
+import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkProvider;
+import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
+import ca.surgestorm.notitowin.ui.MainActivity;
+import ca.surgestorm.notitowin.ui.NotiListActivity;
+import ca.surgestorm.notitowin.ui.ServerListUpdater;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -23,25 +34,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import ca.surgestorm.notitowin.backend.JSONConverter;
-import ca.surgestorm.notitowin.backend.Server;
-import ca.surgestorm.notitowin.controller.networking.helpers.NotificationHelper;
-import ca.surgestorm.notitowin.controller.networking.helpers.RSAHelper;
-import ca.surgestorm.notitowin.controller.networking.helpers.SSLHelper;
-import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
-import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkProvider;
-import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
-import ca.surgestorm.notitowin.ui.MainActivity;
-import ca.surgestorm.notitowin.ui.NotiListActivity;
-import ca.surgestorm.notitowin.ui.ServerListUpdater;
-
 @SuppressLint("Registered")
 public class BackgroundService extends Service {
     private final static ArrayList<InstanceCallback> callbacks = new ArrayList<>();
     private final static Lock mutex = new ReentrantLock(true);
     private final ArrayList<LANLinkProvider> linkProviders = new ArrayList<>();
-
-
     private ServerListUpdater updater;
     private final ConcurrentHashMap<String, Server> servers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, DeviceListChangedCallback> serverListChangedCallbacks =
@@ -129,9 +126,9 @@ public class BackgroundService extends Service {
             };
     private ActiveNotiProcessor anp;
 
-    public static void initSecurity() {
-        RSAHelper.initKeys();
-        SSLHelper.initCertificate();
+    private static void initSecurity(Context context) {
+        RSAHelper.initKeys(context);
+        SSLHelper.initCertificate(context);
     }
 
     private static void Start(Context c) {
@@ -238,7 +235,7 @@ public class BackgroundService extends Service {
     }
 
     private void registerLinkProviders() {
-        linkProviders.add(new LANLinkProvider());
+        linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
     }
 
     public Server getServer(String id) {
@@ -249,7 +246,8 @@ public class BackgroundService extends Service {
         for (DeviceListChangedCallback callback : serverListChangedCallbacks.values()) {
             callback.onDeviceListChanged();
         }
-        updater.notifyDataSetChanged();
+        if (updater != null)
+            updater.notifyDataSetChanged();
     }
 
     public void addConnectionListener(LANLinkProvider.ConnectionReceiver cr) {
@@ -285,7 +283,7 @@ public class BackgroundService extends Service {
 
         Log.i("BackgroundService", "Service not started yet, initializing...");
 
-        initSecurity();
+        initSecurity(this);
         NotificationHelper.initChannels(BackgroundService.this);
         loadRememberedDevicesFromSettings();
         registerLinkProviders();
@@ -326,6 +324,9 @@ public class BackgroundService extends Service {
             mutex.unlock();
         }
 
+        if (NotificationHelper.isPersistentNotificationEnabled(this)) {
+            startForeground(1, createForegroundNotification());
+        }
         return Service.START_STICKY;
     }
 

@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">NotiToWin</string>
     <string name="todo">TODO</string>
+    <string name="dot">•</string>
+
+    <!--Placeholder Strings for Layouts-->
+    <string name="notification_title_placeholder">Notification Title</string>
+    <string name="notification_text_placeholder">Notification Text</string>
+    <string name="notification_time_placeholder">moments ago</string>
+    <string name="server_ip_placeholder">255.255.255.255</string>
+    <string name="server_connect_method_placeholder">LAN</string>
+    <string name="server_name_placeholder">DESKTOP-123456</string>
+    <string name="server_os_placeholder">Windows 10 18.09</string>
+
 </resources>
