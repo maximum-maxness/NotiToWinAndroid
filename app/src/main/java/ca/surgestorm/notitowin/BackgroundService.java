@@ -39,10 +39,7 @@ public class BackgroundService extends Service {
     private final static ArrayList<InstanceCallback> callbacks = new ArrayList<>();
     private final static Lock mutex = new ReentrantLock(true);
     private final ArrayList<LANLinkProvider> linkProviders = new ArrayList<>();
-    private ServerListUpdater updater;
     private final ConcurrentHashMap<String, Server> servers = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, DeviceListChangedCallback> serverListChangedCallbacks =
-            new ConcurrentHashMap<>();
     private final Server.PairingCallback devicePairingCallback =
             new Server.PairingCallback() {
                 @Override
@@ -74,6 +71,7 @@ public class BackgroundService extends Service {
 
                 @Override
                 public void pairingFailed(String error) {
+                    System.err.println(error);
                     onServerListChanged();
                 }
 
@@ -82,11 +80,15 @@ public class BackgroundService extends Service {
                     onServerListChanged();
                 }
             };
+
+    private final ConcurrentHashMap<String, DeviceListChangedCallback> serverListChangedCallbacks =
+            new ConcurrentHashMap<>();
+    private ServerListUpdater updater;
     private final LANLinkProvider.ConnectionReceiver deviceListener =
             new LANLinkProvider.ConnectionReceiver() {
                 @Override
                 public void onConnectionReceived(JSONConverter identityPacket, LANLink link) {
-                    String serverID = identityPacket.getString("serverID");
+                    String serverID = identityPacket.getString("clientID");
                     Server server;
                     try {
                         server = servers.get(serverID);
@@ -126,6 +128,14 @@ public class BackgroundService extends Service {
             };
     private ActiveNotiProcessor anp;
 
+    public ServerListUpdater getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(ServerListUpdater updater) {
+        this.updater = updater;
+    }
+
     private static void initSecurity(Context context) {
         RSAHelper.initKeys(context);
         SSLHelper.initCertificate(context);
@@ -133,14 +143,6 @@ public class BackgroundService extends Service {
 
     private static void Start(Context c) {
         RunCommand(c, null);
-    }
-
-    public ServerListUpdater getUpdater() {
-        return updater;
-    }
-
-    public void setUpdater(ServerListUpdater updater) {
-        this.updater = updater;
     }
 
     public static void RunCommand(final Context c, final InstanceCallback callback) {
@@ -165,9 +167,9 @@ public class BackgroundService extends Service {
     public void cleanDevices() {
         new Thread(() -> {
             for (Server server : servers.values()) {
-                if (!server.isPaired() && !server.isPairRequested() && !server.isPairRequestedByPeer() && !server.deviceShouldBeKeptAlive()) {
-                    server.disconnect();
-                }
+//                if (!server.isPaired() && !server.isPairRequested() && !server.isPairRequestedByPeer() && !server.deviceShouldBeKeptAlive()) {
+                server.disconnect();
+//                }
             }
         }).start();
     }
@@ -235,19 +237,18 @@ public class BackgroundService extends Service {
     }
 
     private void registerLinkProviders() {
-        linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
+        if (linkProviders.isEmpty())
+            linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
     }
 
     public Server getServer(String id) {
         return servers.get(id);
     }
 
-    void onServerListChanged() {
+    public void onServerListChanged() {
         for (DeviceListChangedCallback callback : serverListChangedCallbacks.values()) {
             callback.onDeviceListChanged();
         }
-        if (updater != null)
-            updater.notifyDataSetChanged();
     }
 
     public void addConnectionListener(LANLinkProvider.ConnectionReceiver cr) {
@@ -283,7 +284,7 @@ public class BackgroundService extends Service {
 
         Log.i("BackgroundService", "Service not started yet, initializing...");
 
-        initSecurity(this);
+        new Thread(() -> initSecurity(this));
         NotificationHelper.initChannels(BackgroundService.this);
         loadRememberedDevicesFromSettings();
         registerLinkProviders();

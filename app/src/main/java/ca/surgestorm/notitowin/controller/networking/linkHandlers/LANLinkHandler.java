@@ -1,10 +1,14 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import android.util.Log;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.backend.helpers.PacketType;
+import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
+import ca.surgestorm.notitowin.ui.MainActivity;
 
 import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Timer;
@@ -28,6 +32,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void requestPairing() {
+        System.out.println("Request Pairing Called!");
         Server.SendPacketStatusCallback callback =
                 new Server.SendPacketStatusCallback() {
 
@@ -49,13 +54,14 @@ public class LANLinkHandler { // TODO Finish and Implement
                     @Override
                     public void onFailure(Throwable e) {
                         pairingHandlerCallback.pairingFailed("Cant send packet.");
+                        e.printStackTrace();
                     }
                 };
         server.sendPacket(createPairPacket(), callback);
     }
 
     public void unpair() {
-        System.out.println("UnPairing Server ID: " + server.getServerID());
+        Log.i("LANLinkHandler", "UnPairing Server ID: " + server.getServerID());
         pairStatus = PairStatus.NotPaired;
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", false);
@@ -63,7 +69,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void acceptPairing() {
-        System.out.println("Accepting the Pair for Server ID: " + server.getServerID());
+        Log.i("LANLinkHandler", "Accepting the Pair for Server ID: " + server.getServerID());
         Server.SendPacketStatusCallback callback =
                 new Server.SendPacketStatusCallback() {
 
@@ -81,7 +87,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void rejectPairing() {
-        System.out.println("Rejecting Pair for Server ID: " + server.getServerID());
+        Log.i("LANLinkHandler", "Rejecting Pair for Server ID: " + server.getServerID());
         pairStatus = PairStatus.NotPaired;
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", false);
@@ -103,11 +109,23 @@ public class LANLinkHandler { // TODO Finish and Implement
     private JSONConverter createPairPacket() {
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", true);
+
+        String pubKeyStr;
+        try {
+            PublicKey pubKey = RSAHelper.getPublicKey(MainActivity.getAppContext());
+            pubKeyStr = pubKey.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            pubKeyStr = "";
+        }
+        String publicKeyFormatted =
+                "-----BEGIN PUBLIC KEY-----\n" + pubKeyStr.trim() + "\n-----END PUBLIC KEY-----\n";
+        json.set("publicKey", publicKeyFormatted);
         return json;
     }
 
     public void packageReceived(JSONConverter json) {
-        System.out.println("Package Received for Server ID: " + server.getServerID());
+        Log.i("LANLinkHandler", "Package Received for Server ID: " + server.getServerID());
         boolean wantsToPair = json.getBoolean("pair");
 
         if (wantsToPair == isPaired()) {
@@ -119,7 +137,7 @@ public class LANLinkHandler { // TODO Finish and Implement
         }
 
         if (wantsToPair) {
-            System.out.println("Server wants to Pair.");
+            Log.i("LANLinkHandler", "Server wants to Pair.");
             try {
                 String publicKeyStr = json.getString("publicKey").replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----\n", "");
                 byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
@@ -141,7 +159,7 @@ public class LANLinkHandler { // TODO Finish and Implement
                 pairingHandlerCallback.incomingRequest();
             }
         } else {
-            System.out.println("Unpair Request from server ID: " + server.getServerID());
+            Log.i("LANLinkHandler", "Unpair Request from server ID: " + server.getServerID());
             if (pairStatus == PairStatus.Requested) {
                 pairingHandlerCallback.pairingFailed("Cancelled");
             } else if (pairStatus == PairStatus.Paired) {

@@ -3,12 +3,15 @@ package ca.surgestorm.notitowin.backend;
 import android.app.Notification;
 import android.content.Context;
 import android.content.SharedPreferences;
+import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.helpers.PacketType;
 import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
 import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
+import ca.surgestorm.notitowin.ui.MainActivity;
+import ca.surgestorm.notitowin.ui.ServerListFragment;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -38,6 +41,7 @@ public class Server implements LANLink.PacketReceiver {
     public PublicKey publicKey;
     private String osName;
     private String osVer;
+    private String networkIP;
     private Certificate certificate;
     private String name;
     private PairStatus pairStatus;
@@ -75,11 +79,14 @@ public class Server implements LANLink.PacketReceiver {
     }
 
     public String getIP() {
-        String network = "";
-        for (LANLink link : links) {
-            network = link.getIP().getHostAddress();
+        if (networkIP == null) {
+            String network = "";
+            for (LANLink link : links) {
+                network = link.getIP().getHostAddress();
+            }
+            networkIP = network;
         }
-        return network;
+        return networkIP;
     }
 
     public int getPreviewImage() {
@@ -109,6 +116,7 @@ public class Server implements LANLink.PacketReceiver {
 
     @Override
     public void onPacketReceived(JSONConverter json) {
+        System.out.println("Received Packet of Type: " + json.getType());
         if (PacketType.PAIR_REQUEST.equals(json.getType())) {
             System.out.println("Pair Packet!");
             for (LANLinkHandler llh : pairingHandlers.values()) {
@@ -135,6 +143,14 @@ public class Server implements LANLink.PacketReceiver {
 
     public boolean isReachable() {
         return !links.isEmpty();
+    }
+
+    public boolean isConnected() {
+        boolean b = false;
+        for (LANLink link : links) {
+            System.out.println("Link is connected?" + (b = link.isConnected()));
+        }
+        return b;
     }
 
     public void acceptPairing() {
@@ -258,6 +274,11 @@ public class Server implements LANLink.PacketReceiver {
 //            }
 //        });
 //        requestThread.start();
+        ServerListFragment.fragmentHandler.post(() -> {
+            BackgroundService.RunCommand(MainActivity.getAppContext(), (service) -> {
+                service.getUpdater().notifyDataSetChanged();
+            });
+        });
     }
 
     public void removeLink(LANLink link) {

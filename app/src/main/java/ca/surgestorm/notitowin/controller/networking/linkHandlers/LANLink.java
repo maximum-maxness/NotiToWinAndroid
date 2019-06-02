@@ -1,18 +1,16 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import android.util.Log;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.backend.helpers.PacketType;
 import ca.surgestorm.notitowin.backend.helpers.RSAHelper;
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.nio.channels.NotYetConnectedException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -60,30 +58,42 @@ public class LANLink {
         this.connectionSource = connectionSource;
 
         if (oldSocket != null) {
+            Log.e("LANLINK", "Closing old socket.");
             oldSocket.close();
         }
 
         new Thread(
                 () -> {
                     try {
-                        BufferedReader reader =
-                                new BufferedReader(new InputStreamReader(newSocket.getInputStream()));
+                        DataInputStream reader =
+                                new DataInputStream(newSocket.getInputStream());
+                        int errCount = 0;
                         while (true) {
                             String packet;
                             try {
-                                packet = reader.readLine();
-                            } catch (SocketTimeoutException e) {
+                                packet = reader.readUTF();
+                            } catch (SocketTimeoutException | EOFException e) {
                                 continue;
                             }
                             if (packet == null) {
-                                throw new IOException("End of Stream");
+                                errCount++;
+                                if (errCount >= 4) {
+                                    throw new IOException("End of Stream");
+                                } else {
+                                    System.err.println("Packet null, retrying for the " + errCount + " time.");
+                                    continue;
+                                }
                             }
                             if (packet.isEmpty()) {
                                 continue;
                             }
+                            Log.i("LANLink", "Packet: " + packet + " Received.");
                             JSONConverter json = JSONConverter.unserialize(packet);
+                            errCount = 0;
                             receivedNetworkPacket(json);
                         }
+                    } catch (SocketException e) {
+                        System.out.println("Server Disconnected.");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -103,17 +113,18 @@ public class LANLink {
             final ServerSocket server; //TODO Implement DataLoad Sending
 
             if (key != null) {
-                System.out.println("Encrypting Packet...");
+                Log.i("LANLink", "Encrypting Packet...");
                 json = RSAHelper.encrypt(json, key);
-                System.out.println("Packet encrypted successfully!");
+                Log.i("LANLink", "Packet encrypted successfully!");
             }
 
             try {
                 OutputStream writer = socket.getOutputStream();
                 writer.write(json.serialize().getBytes());
                 writer.flush();
+                writer.close();
             } catch (Exception e) {
-                disconnect(); // main socket is broken, disconnect
+//                disconnect(); // main socket is broken, disconnect
                 throw e;
             }
             callback.onSuccess();
@@ -126,23 +137,27 @@ public class LANLink {
         }
     }
 
+    public boolean isConnected() {
+        return socket.isConnected();
+    }
+
     public boolean sendPacket(JSONConverter json, Server.SendPacketStatusCallback callback) {
-        System.out.println("Sending Packet, no need to Encrypt.");
+        Log.i("LANLink", "Sending Packet, no need to Encrypt.");
         return sendPacketProtected(json, callback, null);
     }
 
     public boolean sendPacket(JSONConverter json, Server.SendPacketStatusCallback callback, PublicKey key) {
-        System.out.println("Sending Packet, going to Encrypt");
+        Log.i("LANLink", "Sending Packet, going to Encrypt");
         return sendPacketProtected(json, callback, key);
     }
 
     private void receivedNetworkPacket(JSONConverter json) {
-        System.out.println("Received Packet of Type: " + json.getType());
+        Log.i("LANLink", "Received Packet of Type: " + json.getType());
         if (json.getType().equals(PacketType.ENCRYPTED_PACKET)) {
             try {
-                System.out.println("Trying to Decrypt Packet...");
+                Log.i("LANLink", "Trying to Decrypt Packet...");
                 json = RSAHelper.decrypt(json, privKey);
-                System.out.println("Packet decrypted successfully!");
+                Log.i("LANLink", "Packet decrypted successfully!");
             } catch (Exception e) {
                 System.err.println("Error Decrypting Packet.");
                 e.printStackTrace();
@@ -152,14 +167,14 @@ public class LANLink {
     }
 
     private void packageReceived(JSONConverter json) {
-        System.out.println("Sending Packet to all Receivers!");
+        Log.i("LANLink", "Sending Packet to all Receivers!");
         for (PacketReceiver pr : receivers) {
             pr.onPacketReceived(json);
         }
     }
 
     public void disconnect() {
-        System.out.println("Disconnecting Socket.");
+        Log.i("LANLink", "Disconnecting Socket.");
         linkProvider.connectionLost(this);
         try {
             if (socket != null)

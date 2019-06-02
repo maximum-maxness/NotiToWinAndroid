@@ -1,6 +1,5 @@
 package ca.surgestorm.notitowin.backend.helpers;
 
-import android.annotation.SuppressLint;
 import android.os.Build;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 
@@ -38,7 +37,7 @@ public class PacketType {
         String osVer = System.getProperty("os.version");
         String myName = getDeviceName();
         String myID = getDeviceID();
-        System.out.println("My name is: " + myName + " My ID is: " + myID);
+//        System.out.println("My name is: " + myName + " My ID is: " + myID);
         json.set("clientName", myName);
         json.set("clientID", myID);
         json.set("osName", osName);
@@ -46,7 +45,6 @@ public class PacketType {
         return json;
     }
 
-    @SuppressLint("MissingPermission")
     private static String getDeviceName() {
 //        InetAddress myHost;
 //        try {

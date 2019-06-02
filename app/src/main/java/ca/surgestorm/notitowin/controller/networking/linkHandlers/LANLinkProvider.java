@@ -2,22 +2,19 @@ package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.backend.helpers.PacketType;
-import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
-import ca.surgestorm.notitowin.ui.MainActivity;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
-import java.security.cert.Certificate;
-import java.util.Base64;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -25,7 +22,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
     static final int DATALOAD_TRANSFER_MIN_PORT = 1936;
     private static final int MAX_PORT = 1958;
-    private static final int MIN_PORT = 1927;
+    private static final int MIN_PORT = 1938;
     private final HashMap<String, LANLink> visibleServers = new HashMap<>();
     private final CopyOnWriteArrayList<ConnectionReceiver> connectionReceivers = new CopyOnWriteArrayList<>();
 
@@ -91,7 +88,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         if (!json.getType().equals(PacketType.IDENTITY_PACKET)) {
             return;
         }
-
+        Log.i("LANLinkProvider", "Identity package received from a TCP connection from " + json.getString("clientName"));
         identityPacketReceived(json, socket, LANLink.ConnectionStarted.Locally);
     }
 
@@ -157,38 +154,51 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         try {
             SharedPreferences preferences = context.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
             boolean isDeviceTrusted = preferences.getBoolean(serverID, false);
-            final SSLSocket sslSocket = SSLHelper.convertToSSLSocket(context, socket, serverID, isDeviceTrusted, serverMode);
-            sslSocket.addHandshakeCompletedListener(event -> {
-                String mode = serverMode ? "client" : "server";
-                try {
-                    Certificate certificate = event.getPeerCertificates()[0];
-                    json.set("certificate", Base64.getEncoder().encodeToString(certificate.getEncoded()));
-                    System.out.println("Handshake as " + mode + " successful with " + json.getString("clientName") + " secured with " + event.getCipherSuite());
-                    addLink(json, sslSocket, connectionStarted);
-                } catch (Exception e) {
-                    System.err.println("Handshake as " + mode + " failed with " + json.getString("clientName"));
-                    e.printStackTrace();
-                    BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
-                        Server server = service.getServer(serverID);
-                        if (server != null) {
-                            server.unpair();
-                        }
-                    });
-                }
-            });
 
-            new Thread(() -> {
-                try {
-                    synchronized (this) {
-                        System.out.println("Starting SSL Handshake...");
-                        sslSocket.startHandshake();
-                    }
-                } catch (Exception e) {
-                    System.err.println("Handshake failed with " + json.getString("clientName"));
-                    e.printStackTrace();
-                }
-            }).start();
-        } catch (Exception e) {
+
+            if (isDeviceTrusted) {
+//                    && !SSLHelper.isCertificateStored(context, serverID)) {
+                BackgroundService.RunCommand(context, service -> {
+                    Server server = service.getServer(serverID);
+                    if (server == null) return;
+                    if (server.isConnected()) return;
+                    server.unpair();
+                    identityPacketReceived(json, socket, connectionStarted);
+                });
+            }
+
+
+//            final SSLSocket sslSocket = SSLHelper.convertToSSLSocket(context, socket, serverID, isDeviceTrusted, serverMode);
+//            sslSocket.addHandshakeCompletedListener(event -> {
+//                String mode = serverMode ? "client" : "server";
+//                try {
+//                    Certificate certificate = event.getPeerCertificates()[0];
+//                    json.set("certificate", Base64.getEncoder().encodeToString(certificate.getEncoded()));
+//                    System.out.println("Handshake as " + mode + " successful with " + json.getString("clientName") + " secured with " + event.getCipherSuite());
+            addLink(json, socket, connectionStarted);
+//                } catch (Exception e) {
+//                    System.err.println("Handshake as " + mode + " failed with " + json.getString("clientName"));
+//                    e.printStackTrace();
+//                    BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+//                        Server server = service.getServer(serverID);
+//                        if (server != null) {
+//                            server.unpair();
+//                        }
+//                    });
+//                }
+//            });
+//            new Thread(() -> {
+//                try {
+//                    synchronized (this) {
+//                        System.out.println("Starting SSL Handshake...");
+//                        sslSocket.startHandshake();
+//                    }
+//                } catch (Exception e) {
+//                    System.err.println("Handshake failed with " + json.getString("clientName"));
+//                    e.printStackTrace();
+//                }
+//            }).start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -259,34 +269,71 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
     private void broadcastUdpPacket() {
         System.out.println("Broadcasting Identity Packet to 255.255.255.255");
         new Thread(() -> {
-            String broadcast = "255.255.255.255";
-
-            JSONConverter passportPacket = PacketType.makeIdentityPacket();
-            int port = (tcpServer == null || !tcpServer.isBound()) ? MIN_PORT : tcpServer.getLocalPort();
-            passportPacket.set("tcpPort", port);
-            DatagramSocket socket = null;
-            byte[] bytes = null;
+//            String broadcast = "255.255.255.255";
             try {
-                socket = new DatagramSocket();
-                socket.setReuseAddress(true);
-                socket.setBroadcast(true);
-                bytes = passportPacket.serialize().getBytes();
-            } catch (Exception e) {
+                MulticastSocket socket = new MulticastSocket(8657);
+//            socket.setBroadcast(true);
+                InetAddress intIP = InetAddress.getByName("230.1.1.1");
+                socket.joinGroup(intIP);
+
+                JSONConverter passportPacket = PacketType.makeIdentityPacket();
+                byte[] sendData = passportPacket.serialize().getBytes();
+                int port = (tcpServer == null || !tcpServer.isBound()) ? MIN_PORT : tcpServer.getLocalPort();
+                passportPacket.set("tcpPort", port);
+
+
+                Enumeration interfaces;
+                interfaces = NetworkInterface.getNetworkInterfaces();
+                while (interfaces.hasMoreElements()) {
+                    NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
+
+                    if (networkInterface.isLoopback() || !networkInterface.isUp() || networkInterface.getDisplayName().contains("radio")) {
+                        continue; // Don't want to broadcast to the loopback interface
+                    }
+
+                    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                        InetAddress broadcast = interfaceAddress.getBroadcast();
+                        if (broadcast == null) {
+                            continue;
+                        }
+
+                        // Send the broadcast package!
+                        try {
+                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, MIN_PORT);
+                            socket.send(sendPacket);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        Log.i("ServerDetector", "Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
+                    }
+                }
+                socket.close();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            if (bytes != null) {
-                try {
-                    InetAddress server = InetAddress.getByName(broadcast);
-                    socket.send(new DatagramPacket(bytes, bytes.length, server, MIN_PORT));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+//            DatagramSocket socket = null;
+//            byte[] bytes = null;
+//            try {
+//                socket = new DatagramSocket();
+//                socket.setReuseAddress(true);
+//                socket.setBroadcast(true);
+//                bytes = passportPacket.serialize().getBytes();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            if (bytes != null) {
+//                try {
+//                    InetAddress server = InetAddress.getByName(broadcast);
+//                    socket.send(new DatagramPacket(bytes, bytes.length, server, MIN_PORT));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
-            if (socket != null) {
-                socket.close();
-            }
+
         }).start();
     }
 

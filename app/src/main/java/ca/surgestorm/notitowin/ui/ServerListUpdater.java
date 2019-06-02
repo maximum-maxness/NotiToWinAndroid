@@ -6,14 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.Collection;
-
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.Server;
+
+import java.util.Collection;
 
 public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.ServerViewHolder> {
 
@@ -22,7 +20,7 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
     private static RecyclerViewClickListener mListener;
 
 
-    public ServerListUpdater(Context listContext, Collection<Server> serverList, RecyclerViewClickListener itemClickListener) {
+    ServerListUpdater(Context listContext, Collection<Server> serverList, RecyclerViewClickListener itemClickListener) {
         this.listContext = listContext;
         this.serverList = serverList;
         mListener = itemClickListener;
@@ -44,9 +42,9 @@ public class ServerListUpdater extends RecyclerView.Adapter<ServerListUpdater.Se
     public void onBindViewHolder(@NonNull ServerViewHolder holder, int position) {
         Server server = (Server) serverList.toArray()[position];
         holder.serverName.setText(server.getName());
-        holder.osDescription.setText(server.getOsName() + "v." + server.getOsVer());
+        holder.osDescription.setText(String.format("%sv.%s", server.getOsName(), server.getOsVer()));
         holder.serverIP.setText(server.getIP());
-        holder.connectionMethod.setText("LAN");
+        holder.connectionMethod.setText(listContext.getText(R.string.server_connect_method_placeholder));
         holder.previewImage.setImageDrawable(listContext.getDrawable(server.getPreviewImage()));
     }
 
