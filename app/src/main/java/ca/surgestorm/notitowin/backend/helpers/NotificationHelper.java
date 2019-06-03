@@ -1,5 +1,6 @@
 package ca.surgestorm.notitowin.backend.helpers;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -21,6 +22,12 @@ public class NotificationHelper {
         if (manager != null) {
             manager.createNotificationChannel(persistentChannel);
 
+            manager.createNotificationChannel(new NotificationChannel(
+                    "default",
+                    "Misc Notifications",
+                    NotificationManager.IMPORTANCE_DEFAULT)
+            );
+
 
             manager.createNotificationChannel(new NotificationChannel(
                     "receive_notification",
@@ -41,5 +48,13 @@ public class NotificationHelper {
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean("persistentNotification", false);
+    }
+
+    public static void notifyCompat(NotificationManager notificationManager, int notificationId, Notification notification) {
+        try {
+            notificationManager.notify(notificationId, notification);
+        } catch (Exception ignored) {
+
+        }
     }
 }

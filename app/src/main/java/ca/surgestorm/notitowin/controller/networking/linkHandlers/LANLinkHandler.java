@@ -38,6 +38,7 @@ public class LANLinkHandler { // TODO Finish and Implement
 
                     @Override
                     public void onSuccess() {
+                        hidePairingNotification();
                         pairingTimer = new Timer();
                         pairingTimer.schedule(
                                 new TimerTask() {
@@ -69,6 +70,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void acceptPairing() {
+        hidePairingNotification();
         Log.i("LANLinkHandler", "Accepting the Pair for Server ID: " + server.getServerID());
         Server.SendPacketStatusCallback callback =
                 new Server.SendPacketStatusCallback() {
@@ -87,6 +89,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void rejectPairing() {
+        hidePairingNotification();
         Log.i("LANLinkHandler", "Rejecting Pair for Server ID: " + server.getServerID());
         pairStatus = PairStatus.NotPaired;
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
@@ -131,6 +134,7 @@ public class LANLinkHandler { // TODO Finish and Implement
         if (wantsToPair == isPaired()) {
             if (pairStatus == PairStatus.Requested) {
                 pairStatus = PairStatus.NotPaired;
+                hidePairingNotification();
                 pairingHandlerCallback.pairingFailed("Nope");
             }
             return;
@@ -146,6 +150,7 @@ public class LANLinkHandler { // TODO Finish and Implement
             }
 
             if (pairStatus == PairStatus.Requested) {
+                hidePairingNotification();
                 pairingDone();
             } else {
                 if (server.isPaired()) {
@@ -153,7 +158,19 @@ public class LANLinkHandler { // TODO Finish and Implement
                     return;
                 }
 
-                //TODO Implement Choosing Whether or not to accept pair
+                hidePairingNotification();
+                server.displayPairingNotification();
+
+                pairingTimer = new Timer();
+
+                pairingTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Log.w("LANLinkHandler", "Timeout, Unpairing");
+                        pairStatus = PairStatus.NotPaired;
+                        hidePairingNotification();
+                    }
+                }, 25000);
 
                 pairStatus = PairStatus.RequestedByPeer;
                 pairingHandlerCallback.incomingRequest();
@@ -161,6 +178,7 @@ public class LANLinkHandler { // TODO Finish and Implement
         } else {
             Log.i("LANLinkHandler", "Unpair Request from server ID: " + server.getServerID());
             if (pairStatus == PairStatus.Requested) {
+                hidePairingNotification();
                 pairingHandlerCallback.pairingFailed("Cancelled");
             } else if (pairStatus == PairStatus.Paired) {
                 pairingHandlerCallback.unpaired();
@@ -189,6 +207,13 @@ public class LANLinkHandler { // TODO Finish and Implement
         pairStatus = PairStatus.Paired;
         pairingHandlerCallback.pairingDone();
 //        }
+    }
+
+    private void hidePairingNotification() {
+        server.hidePairingNotification();
+        if (pairingTimer != null) {
+            pairingTimer.cancel();
+        }
     }
 
     public enum PairStatus {

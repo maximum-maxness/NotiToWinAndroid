@@ -20,6 +20,7 @@ public class RSAHelper {
     public static void initKeys(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         if (!settings.contains("publicKey") || !settings.contains("privateKey")) {
+            System.out.println("Initing Keys...");
             KeyPair keyPair = generateKeyPair();
             if (keyPair == null) return;
             byte[] publicKey = keyPair.getPublic().getEncoded();
@@ -28,6 +29,8 @@ public class RSAHelper {
             edit.putString("publicKey", android.util.Base64.encodeToString(publicKey, 0).trim() + "\n");
             edit.putString("privateKey", android.util.Base64.encodeToString(privateKey, 0));
             edit.apply();
+        } else {
+            System.out.println("Already have keys!");
         }
     }
 

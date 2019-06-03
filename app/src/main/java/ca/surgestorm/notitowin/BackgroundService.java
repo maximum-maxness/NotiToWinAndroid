@@ -24,10 +24,10 @@ import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkProvider;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 import ca.surgestorm.notitowin.ui.MainActivity;
-import ca.surgestorm.notitowin.ui.NotiListActivity;
 import ca.surgestorm.notitowin.ui.ServerListUpdater;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,38 +40,22 @@ public class BackgroundService extends Service {
     private final static Lock mutex = new ReentrantLock(true);
     private final ArrayList<LANLinkProvider> linkProviders = new ArrayList<>();
     private final ConcurrentHashMap<String, Server> servers = new ConcurrentHashMap<>();
+    private final HashSet<Object> discoveryModeAcquisitions = new HashSet<>();
+
     private final Server.PairingCallback devicePairingCallback =
             new Server.PairingCallback() {
                 @Override
-                public void incomingRequest(Server server) {
-                    System.err.println("Incoming from Server ID: " + server.getServerID());
-                    Server.SendPacketStatusCallback callback = new Server.SendPacketStatusCallback() {
-                        @Override
-                        public void onSuccess() {
-                            server.requestPairing();
-                        }
-
-                        @Override
-                        public void onFailure(Throwable e) {
-                            server.unpair();
-                        }
-                    };
+                public void incomingRequest() {
+                    onServerListChanged();
                 }
 
                 @Override
-                public void pairingSuccessful(Server server) {
-//          String decision = runner.Main.getDecision("Choose A message to send!");
-//          JSONConverter json = new JSONConverter(PacketType.NOTIFICATION);
-//          json.put("message", decision);
-//          for (Server server : servers.values()) {
-//            server.sendPacket(json);
-//          }
-                    startActivity(new Intent(MainActivity.getAppContext(), NotiListActivity.class));
+                public void pairingSuccessful() {
+                    onServerListChanged();
                 }
 
                 @Override
                 public void pairingFailed(String error) {
-                    System.err.println(error);
                     onServerListChanged();
                 }
 
@@ -119,7 +103,7 @@ public class BackgroundService extends Service {
                     if (server != null) {
                         server.removeLink(link);
                         if (!server.isReachable() && !server.isPaired()) {
-                            servers.remove(server);
+                            servers.remove(link.getServerID());
                             server.removePairingCallback(devicePairingCallback);
                         }
                     }
@@ -127,6 +111,44 @@ public class BackgroundService extends Service {
                 }
             };
     private ActiveNotiProcessor anp;
+
+    public static void addGuiInUseCounter(Context activity) {
+        addGuiInUseCounter(activity, false);
+    }
+
+    public static void addGuiInUseCounter(final Context activity, final boolean forceNetworkRefresh) {
+        BackgroundService.RunCommand(activity, service -> {
+            boolean refreshed = service.acquireDiscoveryMode(activity);
+            if (!refreshed && forceNetworkRefresh) {
+                service.onNetworkChange();
+            }
+        });
+    }
+
+    public static void removeGuiInUseCounter(final Context activity) {
+        BackgroundService.RunCommand(activity, service -> {
+            //If no user interface is open, close the connections open to other devices
+            service.releaseDiscoveryMode(activity);
+        });
+    }
+
+    private boolean acquireDiscoveryMode(Object key) {
+        boolean wasEmpty = discoveryModeAcquisitions.isEmpty();
+        discoveryModeAcquisitions.add(key);
+        if (wasEmpty) {
+            onNetworkChange();
+        }
+        //Log.e("acquireDiscoveryMode",key.getClass().getName() +" ["+discoveryModeAcquisitions.size()+"]");
+        return wasEmpty;
+    }
+
+    private void releaseDiscoveryMode(Object key) {
+        boolean removed = discoveryModeAcquisitions.remove(key);
+        //Log.e("releaseDiscoveryMode",key.getClass().getName() +" ["+discoveryModeAcquisitions.size()+"]");
+        if (removed && discoveryModeAcquisitions.isEmpty()) {
+            cleanDevices();
+        }
+    }
 
     public ServerListUpdater getUpdater() {
         return updater;
@@ -167,9 +189,9 @@ public class BackgroundService extends Service {
     public void cleanDevices() {
         new Thread(() -> {
             for (Server server : servers.values()) {
-//                if (!server.isPaired() && !server.isPairRequested() && !server.isPairRequestedByPeer() && !server.deviceShouldBeKeptAlive()) {
+                if (!server.isPaired() && !server.isPairRequested() && !server.isPairRequestedByPeer() && !server.deviceShouldBeKeptAlive()) {
                 server.disconnect();
-//                }
+                }
             }
         }).start();
     }
@@ -237,7 +259,7 @@ public class BackgroundService extends Service {
     }
 
     private void registerLinkProviders() {
-        if (linkProviders.isEmpty())
+//        if (linkProviders.isEmpty())
             linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
     }
 
@@ -248,6 +270,10 @@ public class BackgroundService extends Service {
     public void onServerListChanged() {
         for (DeviceListChangedCallback callback : serverListChangedCallbacks.values()) {
             callback.onDeviceListChanged();
+        }
+        if (NotificationHelper.isPersistentNotificationEnabled(this)) {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.notify(1, createForegroundNotification());
         }
     }
 
@@ -284,7 +310,9 @@ public class BackgroundService extends Service {
 
         Log.i("BackgroundService", "Service not started yet, initializing...");
 
-        new Thread(() -> initSecurity(this));
+//        new Thread(() ->
+        initSecurity(this);
+//        ).start();
         NotificationHelper.initChannels(BackgroundService.this);
         loadRememberedDevicesFromSettings();
         registerLinkProviders();

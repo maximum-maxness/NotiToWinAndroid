@@ -43,6 +43,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
             try {
                 ServerSocket possibleServer = new ServerSocket();
                 possibleServer.bind(new InetSocketAddress(tcpPort));
+                System.out.println("Using port " + tcpPort);
                 return possibleServer;
             } catch (IOException e) {
                 tcpPort++;
@@ -76,7 +77,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String message = reader.readLine();
-//            System.out.println("Read message: " + message);
+            System.out.println("Read message: " + message);
             json = JSONConverter.unserialize(message);
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,8 +106,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
             if (!json.getType().equals(PacketType.IDENTITY_PACKET)) {
                 return;
             } else {
-                InetAddress myHost = InetAddress.getLocalHost();
-                String ownID = myHost.getHostName();
+                String ownID = PacketType.getDeviceID();
                 if (ownID.equals(serverID)) {
                     return;
                 }
@@ -140,6 +140,8 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
     }
 
     private void identityPacketReceived(final JSONConverter json, final Socket socket, final LANLink.ConnectionStarted connectionStarted) {
+
+
         String myID = PacketType.getDeviceID();
         final String serverID = json.getString("clientID");
         System.out.println("Identity Packet Received from Server ID: " + serverID);
@@ -163,6 +165,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
                     if (server == null) return;
                     if (server.isConnected()) return;
                     server.unpair();
+                    Log.i("LANLINKPROVIDER", "Retrying as unpaired!");
                     identityPacketReceived(json, socket, connectionStarted);
                 });
             }
@@ -208,7 +211,9 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         LANLink currentLink = visibleServers.get(serverID);
         if (currentLink != null) {
             System.out.println("Re Using Same Link for Server ID: " + serverID);
+//            if(currentLink.linkIsActive()) {
             final Socket oldSocket = currentLink.reset(socket, connectionStarted);
+//            }
         } else {
             System.out.println("Creating a new Link for Server ID: " + serverID);
             LANLink link = new LANLink(serverID, this, socket, connectionStarted);
@@ -360,7 +365,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
     }
 
     public void onStop() {
-        System.out.println("Stopping LANLINK PROVIDER");
+        Log.e("LANLINKPROVIDER", "Stopping LANLINK PROVIDER");
         listening = false;
         try {
             tcpServer.close();
@@ -376,6 +381,10 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 
     public void onNetworkChange() {
         broadcastUdpPacket();
+    }
+
+    public String getName() {
+        return "LanLinkProvider";
     }
 
     public interface ConnectionReceiver {

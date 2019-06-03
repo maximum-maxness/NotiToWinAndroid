@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
+import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.backend.helpers.IPHelper;
 import ca.surgestorm.notitowin.backend.helpers.NotificationHelper;
 
@@ -55,6 +56,32 @@ public class MainActivity extends FragmentActivity {
                 .beginTransaction()
                 .replace(R.id.container, fragment)
                 .commit();
+    }
+
+    private String onPairResultFromNotification(String serverID, String pairStatus) {
+        assert (serverID != null);
+
+        if (!pairStatus.equals("pending")) {
+            BackgroundService.RunCommand(this, service -> {
+                Server server = service.getServer(serverID);
+                if (server == null) {
+                    Log.w("rejectPairing", "Device no longer exists: " + serverID);
+                    return;
+                }
+
+                if (pairStatus.equals("accepted")) {
+                    server.acceptPairing();
+                } else if (pairStatus.equals("rejected")) {
+                    server.rejectPairing();
+                }
+            });
+        }
+
+        if (pairStatus.equals("rejected") || pairStatus.equals("pending")) {
+            return serverID;
+        } else {
+            return null;
+        }
     }
 
 }
