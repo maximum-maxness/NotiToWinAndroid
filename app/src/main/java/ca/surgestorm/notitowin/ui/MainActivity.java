@@ -30,7 +30,7 @@ public class MainActivity extends FragmentActivity {
     //    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) { //TODO Remember What Device was selected
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_main);
         setContentFragment(serverListFragment);

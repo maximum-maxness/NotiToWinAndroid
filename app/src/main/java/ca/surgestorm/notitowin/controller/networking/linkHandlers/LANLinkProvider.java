@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -139,6 +140,8 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         }
     }
 
+    private ArrayList<String> processingIDS = new ArrayList<>();
+
     private void identityPacketReceived(final JSONConverter json, final Socket socket, final LANLink.ConnectionStarted connectionStarted) {
 
 
@@ -149,6 +152,13 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         if (serverID.equals(myID)) {
             System.err.println("The server ID matches my own ID!");
             return;
+        }
+
+        if (processingIDS.contains(serverID)) {
+            System.err.println("Already processing client ID: " + serverID);
+            return;
+        } else {
+            processingIDS.add(serverID);
         }
 
         final boolean serverMode = connectionStarted == LANLink.ConnectionStarted.Locally;
@@ -170,7 +180,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
                 });
             }
 
-
+            //FIXME SSL Handshake not completing
 //            final SSLSocket sslSocket = SSLHelper.convertToSSLSocket(context, socket, serverID, isDeviceTrusted, serverMode);
 //            sslSocket.addHandshakeCompletedListener(event -> {
 //                String mode = serverMode ? "client" : "server";
@@ -178,10 +188,12 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 //                    Certificate certificate = event.getPeerCertificates()[0];
 //                    json.set("certificate", Base64.getEncoder().encodeToString(certificate.getEncoded()));
 //                    System.out.println("Handshake as " + mode + " successful with " + json.getString("clientName") + " secured with " + event.getCipherSuite());
+            processingIDS.remove(serverID);
             addLink(json, socket, connectionStarted);
 //                } catch (Exception e) {
 //                    System.err.println("Handshake as " + mode + " failed with " + json.getString("clientName"));
 //                    e.printStackTrace();
+//                    processingIDS.remove(serverID);
 //                    BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
 //                        Server server = service.getServer(serverID);
 //                        if (server != null) {
@@ -203,6 +215,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
 //            }).start();
         } catch (IOException e) {
             e.printStackTrace();
+            processingIDS.remove(serverID);
         }
     }
 

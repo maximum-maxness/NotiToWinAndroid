@@ -90,8 +90,7 @@ public class BackgroundService extends Service {
                             servers.put(serverID, server);
                             server.addPairingCallback(devicePairingCallback);
                         } else {
-                            server.disconnect(); // TODO Implement decision making on whether to accept the pair or
-                            // not, stop it from disconnecting regardless.
+                            server.disconnect();
                         }
                     }
                     onServerListChanged();

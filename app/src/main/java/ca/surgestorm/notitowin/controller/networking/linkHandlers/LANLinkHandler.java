@@ -1,5 +1,7 @@
 package ca.surgestorm.notitowin.controller.networking.linkHandlers;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.Server;
@@ -189,24 +191,20 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     private void pairingDone() {
-//        if (server.publicKey != null) { //TODO Remember Previously Paired Servers
-//            try {
-//                String encodedPublicKey = Base64.getEncoder().encodeToString(server.publicKey.getEncoded());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                String encodedCertificate =
-//                        Base64.getEncoder().encodeToString(server.certificate.getEncoded());
-//            } catch (NullPointerException n) {
-//                System.err.println("No Certificate Exists!");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+        SharedPreferences.Editor editor = MainActivity.getAppContext().getSharedPreferences(server.getServerID(), Context.MODE_PRIVATE).edit();
+        try {
+            String encodedCertificate =
+                    Base64.getEncoder().encodeToString(server.certificate.getEncoded());
+            editor.putString("certificate", encodedCertificate);
+        } catch (NullPointerException n) {
+            System.err.println("No Certificate Exists!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        editor.apply();
 
         pairStatus = PairStatus.Paired;
         pairingHandlerCallback.pairingDone();
-//        }
     }
 
     private void hidePairingNotification() {

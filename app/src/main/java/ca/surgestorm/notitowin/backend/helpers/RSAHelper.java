@@ -20,7 +20,7 @@ public class RSAHelper {
     public static void initKeys(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         if (!settings.contains("publicKey") || !settings.contains("privateKey")) {
-            System.out.println("Initing Keys...");
+            System.out.println("Initiating Keys...");
             KeyPair keyPair = generateKeyPair();
             if (keyPair == null) return;
             byte[] publicKey = keyPair.getPublic().getEncoded();
