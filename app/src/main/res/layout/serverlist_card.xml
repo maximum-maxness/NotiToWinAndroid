@@ -10,51 +10,54 @@
         android:layout_margin="4dp">
 
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp">
 
             <ImageView
-                android:id="@+id/previewImage"
-                android:layout_width="120dp"
-                android:layout_height="90dp"
-                android:contentDescription="@string/todo"
-                android:padding="4dp" />
+                    android:id="@+id/previewImage"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:contentDescription="@string/todo"
+                    android:padding="4dp"/>
 
 
             <TextView
                     android:id="@+id/serverName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
+                    android:layout_marginStart="4dp"
                     android:layout_toEndOf="@id/previewImage"
                     android:text="@string/server_name_placeholder"
                     android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
                     android:textColor="#444444"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:layout_marginTop="5dp"/>
 
             <TextView
                     android:id="@+id/osDescription"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/serverName"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="7dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="13dp"
                     android:layout_toEndOf="@id/previewImage"
                     android:text="@string/server_os_placeholder"
-                    android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Info"
+                    android:layout_above="@+id/serverIP"
+                    android:layout_marginBottom="13dp"/>
 
             <TextView
                     android:id="@+id/serverIP"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/osDescription"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="7dp"
                     android:layout_toEndOf="@id/previewImage"
                     android:text="@string/server_ip_placeholder"
                     android:textAppearance="@style/TextAppearance.Compat.Notification"
-                    android:textColor="#666666" />
+                    android:textColor="#666666"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_alignBottom="@+id/previewImage"/>
 
             <TextView
                     android:id="@+id/connectionMethod"
@@ -62,10 +65,10 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentEnd="true"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="5dp"
                     android:text="@string/server_connect_method_placeholder"
-                    android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"/>
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

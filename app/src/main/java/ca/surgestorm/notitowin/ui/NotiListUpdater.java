@@ -1,19 +1,19 @@
 package ca.surgestorm.notitowin.ui;
 
 import android.content.Context;
+import android.graphics.*;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.List;
-
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
+
+import java.util.List;
 
 public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiViewHolder> {
 
@@ -41,11 +41,19 @@ public class NotiListUpdater extends RecyclerView.Adapter<NotiListUpdater.NotiVi
         holder.appName.setText(notification.getAppName());
         holder.content.setText(notification.getText());
         holder.title.setText(notification.getTitle());
-        holder.appIcon.setImageBitmap(notification.getSmallIconBitmap());
-        if (notification.getLargeIcon() != null) {
-            holder.largeIcon.setImageBitmap(notification.getLargeIconBitmap()); //TODO Implement Title into cards, as well as Ticker Text?
+
+        Bitmap smBM = notification.getSmallIconBitmap();
+        Bitmap lrgBM = notification.getLargeIconBitmap();
+        Paint paint = new Paint();
+        ColorFilter filter = new PorterDuffColorFilter(ContextCompat.getColor(MainActivity.getAppContext(), R.color.niceDark), PorterDuff.Mode.SRC_IN);
+        paint.setColorFilter(filter);
+        Canvas canvas = new Canvas(smBM);
+        canvas.drawBitmap(smBM, 0, 0, paint);
+        holder.appIcon.setImageBitmap(smBM);
+        if (lrgBM != null) {
+            holder.largeIcon.setImageBitmap(lrgBM);
         } else {
-            holder.largeIcon.setImageBitmap(notification.getSmallIconBitmap());
+            holder.largeIcon.setImageBitmap(smBM);
         }
         holder.time.setText(notification.getTime());
     }

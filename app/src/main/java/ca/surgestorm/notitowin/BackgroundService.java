@@ -210,7 +210,7 @@ public class BackgroundService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Notification.Builder notification = new Notification.Builder(this, NotificationHelper.persistentChannel.getId());
         notification
-                .setSmallIcon(R.drawable.ic_launcher_foreground) //TODO Make actual icon
+                .setSmallIcon(R.mipmap.ic_launcher_foreground) //TODO Make actual icon
                 .setOngoing(true)
                 .setContentIntent(pi)
                 .setShowWhen(false)

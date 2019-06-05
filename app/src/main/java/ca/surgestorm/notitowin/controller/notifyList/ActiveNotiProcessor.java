@@ -10,22 +10,14 @@ import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
 import android.text.SpannableString;
 import android.util.Log;
-
-import org.ocpsoft.prettytime.PrettyTime;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
-import ca.surgestorm.notitowin.ui.NotiListActivity;
+import ca.surgestorm.notitowin.ui.NotiListFragment;
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.util.*;
 
 public class ActiveNotiProcessor implements NotificationCollector.NotificationListener {
 
@@ -153,8 +145,8 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
             currentNotis.add(key);
             activeNotis.add(dn);
         }
-        if (!NotiListActivity.refreshButtonPressed) {
-            NotiListActivity.updateNotiArray(activeNotis);
+        if (!NotiListFragment.refreshButtonPressed) {
+            NotiListFragment.updateNotiArray(activeNotis);
         }
         BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             service.sendGlobalPacket(dn.populateJSON());

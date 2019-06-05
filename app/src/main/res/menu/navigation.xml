@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+            android:id="@+id/server_list_view"
+            android:icon="@drawable/ic_servers"
+            android:title="@string/title_server_list"/>
+
+    <item
+            android:id="@+id/notification_list_view"
+            android:icon="@drawable/ic_notification"
+            android:title="@string/title_notification_list"/>
+
+    <item
+            android:id="@+id/settings_view"
+            android:icon="@drawable/ic_setting"
+            android:title="@string/title_settings"/>
+
+</menu>

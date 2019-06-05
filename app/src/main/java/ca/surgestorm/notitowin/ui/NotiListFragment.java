@@ -1,30 +1,34 @@
 package ca.surgestorm.notitowin.ui;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-
+import android.view.ViewGroup;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
-
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.controller.notifyList.ActiveNotiProcessor;
 
-public class NotiListActivity extends Activity implements RecyclerViewClickListener {
+import java.util.ArrayList;
 
+public class NotiListFragment extends Fragment implements RecyclerViewClickListener {
+
+    public static Handler fragmentHandler;
     public static boolean refreshButtonPressed = false;
     private RecyclerView recyclerView;
     public static ArrayList<DefaultNotification> defaultNotifications;
     private NotiListUpdater updater;
     private ActiveNotiProcessor anp;
+    private View rootView;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
 
     public static void updateNotiArray(ArrayList<DefaultNotification> defaultNotification) {
         defaultNotifications = defaultNotification;
@@ -33,55 +37,56 @@ public class NotiListActivity extends Activity implements RecyclerViewClickListe
     @Override
     public void onResume() {
         super.onResume();
-        anp.onDestroy();
-        initializeView();
+//        anp.onDestroy();
+        System.out.println("Resuming View!");
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.notilist_activity);
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        fragmentHandler = new Handler();
+        rootView = inflater.inflate(R.layout.notilist_activity, container, false);
+        swipeRefreshLayout = rootView.findViewById(R.id.refresh_notilist_layout);
+        swipeRefreshLayout.setOnRefreshListener(this::refreshAction);
+        System.out.println("Creating View!");
+        anp = new ActiveNotiProcessor();
         initializeView();
+        return rootView;
     }
 
-    private void initializeView() {
-        anp = new ActiveNotiProcessor();
-        Log.i("Noti Activity", "Initialized anp!");
+    private void refreshAction() {
+        swipeRefreshLayout.setRefreshing(true);
+        Log.i("NotiListFragment", "Refresh Activated!");
+        anp.updateTimes();
+        updater.notifyDataSetChanged();
+        refreshButtonPressed = true;
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            swipeRefreshLayout.setRefreshing(false);
+        }).start();
+    }
 
+    public void initializeView() {
         boolean success = anp.onCreate();
         if (!success) {
-            anp.getErrorDialog(this).show();
+            anp.getErrorDialog(this.getActivity()).show();
             anp.onCreate();
         }
 
-        configureGoToMainButton(anp);
 
         defaultNotifications = anp.activeNotis;
         if (defaultNotifications == null) {
             defaultNotifications = new ArrayList<>();
         }
-        recyclerView = findViewById(R.id.recyclerView2);
+        recyclerView = rootView.findViewById(R.id.recyclerView2);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.getAppContext()));
         updater = new NotiListUpdater(MainActivity.getAppContext(), defaultNotifications, this);
         recyclerView.setAdapter(updater);
-    }
 
-    private void configureGoToMainButton(ActiveNotiProcessor anp) {
-        Button backButton = findViewById(R.id.gotomainbutton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goBackToMain();
-            }
-        });
-    }
-
-    public void goBackToMain() {
-        anp.onDestroy();
-        BackgroundService.RunCommand(MainActivity.getAppContext(), BackgroundService::cleanDevices);
-        startActivity(new Intent(NotiListActivity.this, MainActivity.class));
     }
 
     @Override
@@ -89,10 +94,10 @@ public class NotiListActivity extends Activity implements RecyclerViewClickListe
 //        MainActivity.serverConnector.setJson(json);
 //        MainActivity.serverConnector.sendJSONToServer();
 //        try {
-            JSONConverter json = defaultNotifications.get(position).populateJSON();
-            String s = json.serialize();
-            Log.i("NotiToWin", "JSON Export: " + s);
-        BackgroundService.RunCommand(this, service -> {
+        JSONConverter json = defaultNotifications.get(position).populateJSON();
+        String s = json.serialize();
+        Log.i("NotiToWin", "JSON Export: " + s);
+        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             service.sendGlobalPacket(json);
         });
         //            CharSequence data = s;

@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import ca.surgestorm.notitowin.BackgroundService;
@@ -17,6 +18,7 @@ import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
 import ca.surgestorm.notitowin.ui.MainActivity;
+import ca.surgestorm.notitowin.ui.NotiListFragment;
 import ca.surgestorm.notitowin.ui.ServerListFragment;
 
 import java.security.PrivateKey;
@@ -100,16 +102,16 @@ public class Server implements LANLink.PacketReceiver {
         switch (osName.toLowerCase()) {
             case "windows":
                 if (osVer.equals("10")) {
-                    return R.drawable.windows10;
+                    return R.drawable.ic_windows_10;
                 } else {
-                    return R.drawable.windows7;
+                    return R.drawable.ic_windows_7;
                 }
             case "linux":
-                return R.drawable.linux;
+                return R.drawable.ic_linux;
             case "mac":
-                return R.drawable.apple;
+                return R.drawable.ic_apple;
             default:
-                return R.drawable.windows7;
+                return R.drawable.ic_windows_7;
         }
     }
 
@@ -330,6 +332,11 @@ public class Server implements LANLink.PacketReceiver {
         SharedPreferences.Editor editor = context.getSharedPreferences(clientID, Context.MODE_PRIVATE).edit();
         editor.putString("serverName", name);
         editor.apply();
+        Intent intent = new Intent(MainActivity.getAppContext(), NotiListFragment.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Bundle bundle = new Bundle();
+        bundle.putString("selectedClient", clientID);
+        MainActivity.getAppContext().startActivity(intent, bundle);
         for (PairingCallback pb : pairingCallback) {
             pb.pairingSuccessful();
         }
@@ -380,7 +387,7 @@ public class Server implements LANLink.PacketReceiver {
                 .setContentText("Tap to Answer")
                 .setContentIntent(pendingIntent)
                 .setTicker("Pair Requested")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .addAction(R.drawable.ic_accept_pairing, "Accept", acceptedPendingIntent)
                 .addAction(R.drawable.ic_reject_pairing, "Reject", rejectedPendingIntent)
                 .setAutoCancel(true)

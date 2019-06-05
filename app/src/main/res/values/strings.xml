@@ -11,5 +11,10 @@
     <string name="server_connect_method_placeholder">LAN</string>
     <string name="server_name_placeholder">DESKTOP-123456</string>
     <string name="server_os_placeholder">Windows 10 18.09</string>
+    <string name="title_activity_temp">Temp</string>
+    <string name="title_server_list">Servers</string>
+    <string name="title_notification_list">Notifications</string>
+    <string name="title_settings">Settings</string>
+    <string name="clear_trusted_devices">Clear Trusted Devices</string>
 
 </resources>

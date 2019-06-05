@@ -2,12 +2,14 @@ package ca.surgestorm.notitowin.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,11 +19,13 @@ import ca.surgestorm.notitowin.R;
 import ca.surgestorm.notitowin.backend.Server;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class ServerListFragment extends Fragment implements RecyclerViewClickListener {
     public static Handler fragmentHandler;
     private SwipeRefreshLayout swipeRefreshLayout;
     private View rootView;
+    private Button clear_trusted;
     private Activity mainActivity;
     private RecyclerView recyclerView;
 
@@ -30,9 +34,9 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentHandler = new Handler();
-        Objects.requireNonNull(mainActivity.getActionBar()).setTitle("Servers on LAN");
+//        Objects.requireNonNull(mainActivity.getActionBar()).setTitle("Servers on LAN");
         rootView = inflater.inflate(R.layout.serverlist_activity, container, false);
-        swipeRefreshLayout = rootView.findViewById(R.id.refresh_list_layout);
+        swipeRefreshLayout = rootView.findViewById(R.id.refresh_serverlist_layout);
         swipeRefreshLayout.setOnRefreshListener(this::refreshServerList);
         recyclerView = rootView.findViewById(R.id.serverList);
         recyclerView.setHasFixedSize(true);
@@ -41,6 +45,10 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
             service.addServerListChangedCallback("serverFrag", deviceListChangedCallback);
             service.setUpdater(new ServerListUpdater(MainActivity.getAppContext(), service.getDevices().values(), this));
             recyclerView.setAdapter(service.getUpdater());
+        });
+        clear_trusted = rootView.findViewById(R.id.clear_trusted);
+        clear_trusted.setOnClickListener((event) -> {
+            clearTrustedAction();
         });
         return rootView;
     }
@@ -98,5 +106,17 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
             }
         });
 
+    }
+
+    private void clearTrustedAction() {
+        SharedPreferences sharedPreferences = MainActivity.getAppContext().getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
+        Set<String> trustedServers = sharedPreferences.getAll().keySet();
+        BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
+            for (String clientID : trustedServers) {
+                Server server = service.getDevices().remove(clientID);
+                Objects.requireNonNull(server).unpair();
+            }
+        });
+        dataSetChanged();
     }
 }
