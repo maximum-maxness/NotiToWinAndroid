@@ -86,7 +86,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         this.pendingIntents = new HashMap<>();
         this.currentNotis = new HashSet<>();
         this.activeNotis = new ArrayList<>();
-        Log.i("ActiveNotiProcessor", "OnCreate Started!");
+        Log.i(getClass().getSimpleName(), "OnCreate Started!");
         Context context = MainActivity.getAppContext();
         NotificationCollector.RunCommand(context, service -> {
 
@@ -108,7 +108,7 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
     }
 
     public void sendNotification(StatusBarNotification statusBarNotification) {
-//        Log.i("ActiveNotiProcessor", "Send Notification Started!");
+//        Log.i(getClass().getSimpleName(), "Send Notification Started!");
         Notification notification = statusBarNotification.getNotification(); //get the actual notification
 
         //Filter out notifications that we don't want

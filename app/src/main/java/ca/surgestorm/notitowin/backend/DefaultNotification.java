@@ -143,7 +143,7 @@ public class DefaultNotification { //TODO Rewrite DefaultNotification Class so t
         if (this.largeIcon == null) {
             Log.w("DefaultNotification", "Large Icon is Missing/Null!");
         } else {
-            Log.i("DefaultNotification", "Large Icon Filesize for App: " + getAppName() + " is: " + getLargeIconFileSize());
+            Log.i(getClass().getSimpleName(), "Large Icon Filesize for App: " + getAppName() + " is: " + getLargeIconFileSize());
         }
 
     }
@@ -192,7 +192,7 @@ public class DefaultNotification { //TODO Rewrite DefaultNotification Class so t
         if (this.smallIcon == null) {
             Log.w("DefaultNotification", "Small Icon is Missing/Null!");
         } else {
-            Log.i("DefaultNotification", "Small Icon Filesize for App: " + getAppName() + " is: " + getSmallIconFileSize());
+            Log.i(getClass().getSimpleName(), "Small Icon Filesize for App: " + getAppName() + " is: " + getSmallIconFileSize());
         }
     }
 

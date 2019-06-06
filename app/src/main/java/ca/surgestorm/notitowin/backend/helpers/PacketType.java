@@ -37,7 +37,7 @@ public class PacketType {
         String osVer = System.getProperty("os.version");
         String myName = getDeviceName();
         String myID = getDeviceID();
-//        System.out.println("My name is: " + myName + " My ID is: " + myID);
+//        Log.i(getClass().getSimpleName(), "My name is: " + myName + " My ID is: " + myID);
         json.set("clientName", myName);
         json.set("clientID", myID);
         json.set("osName", osName);

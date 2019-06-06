@@ -3,6 +3,7 @@ package ca.surgestorm.notitowin.backend.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import ca.surgestorm.notitowin.backend.JSONConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +21,7 @@ public class RSAHelper {
     public static void initKeys(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         if (!settings.contains("publicKey") || !settings.contains("privateKey")) {
-            System.out.println("Initiating Keys...");
+            Log.i(RSAHelper.class.getSimpleName(), "Initiating Keys...");
             KeyPair keyPair = generateKeyPair();
             if (keyPair == null) return;
             byte[] publicKey = keyPair.getPublic().getEncoded();
@@ -30,7 +31,7 @@ public class RSAHelper {
             edit.putString("privateKey", android.util.Base64.encodeToString(privateKey, 0));
             edit.apply();
         } else {
-            System.out.println("Already have keys!");
+            Log.i(RSAHelper.class.getSimpleName(), "Already have keys!");
         }
     }
 

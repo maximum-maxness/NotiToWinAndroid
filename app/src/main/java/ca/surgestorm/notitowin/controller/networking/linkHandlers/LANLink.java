@@ -6,7 +6,6 @@ import ca.surgestorm.notitowin.backend.Server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -30,12 +29,12 @@ public class LANLink {
             String serverID,
             LANLinkProvider linkProvider,
             Socket socket,
-            ConnectionStarted connectionSource) {
+            ConnectionStarted connectionSource) throws IOException {
         this.serverID = serverID;
         this.linkProvider = linkProvider;
-        this.socket = socket;
         this.connectionSource = connectionSource;
         callback = linkProvider;
+        reset(socket, connectionSource);
     }
 
     public InetAddress getIP() {
@@ -44,15 +43,19 @@ public class LANLink {
 
     public String getName() {
         return "LanLink";
-    } //TODO Socket is always null, fix.
+    }
 
     public LANLinkHandler getPairingHandler(
             Server device, LANLinkHandler.PairingHandlerCallback callback) {
         return new LANLinkHandler(device, callback);
     }
 
+    public ConnectionStarted getConnectionSource() {
+        return connectionSource;
+    }
+
     public Socket reset(Socket newSocket, ConnectionStarted connectionSource) throws IOException {
-        System.err.println("Reset Method Invoked!");
+        Log.e(getClass().getSimpleName(), "Reset Method Invoked!");
 
         Socket oldSocket = socket;
         socket = newSocket;
@@ -60,42 +63,33 @@ public class LANLink {
         this.connectionSource = connectionSource;
 
         if (oldSocket != null) {
-            Log.e("LANLINK", "Closing old socket for server ID: " + serverID);
+            Log.e(getClass().getSimpleName(), "Closing old socket for server ID: " + serverID);
             oldSocket.close();
         }
-
         new Thread(
                 () -> {
                     try {
                         DataInputStream reader =
                                 new DataInputStream(newSocket.getInputStream());
-                        int errCount = 0;
                         while (true) {
                             String packet;
                             try {
                                 packet = reader.readUTF();
-                            } catch (SocketTimeoutException | EOFException e) {
+                            } catch (SocketTimeoutException e) {
                                 continue;
                             }
                             if (packet == null) {
-                                errCount++;
-                                if (errCount >= 4) {
-                                    throw new IOException("End of Stream");
-                                } else {
-                                    System.err.println("Packet null, retrying for the " + errCount + " time.");
-                                    continue;
-                                }
+                                throw new IOException("End of Stream");
                             }
                             if (packet.isEmpty()) {
                                 continue;
                             }
-                            Log.i("LANLink", "Packet: " + packet + " Received.");
+                            Log.i(getClass().getSimpleName(), "Packet: " + packet + " Received.");
                             JSONConverter json = JSONConverter.unserialize(packet);
-                            errCount = 0;
                             receivedNetworkPacket(json);
                         }
                     } catch (IOException e) {
-                        Log.i("LanLink", "Socket closed: " + newSocket.hashCode() + ". Reason: " + e.getMessage());
+                        Log.i(getClass().getSimpleName(), "Socket closed: " + newSocket.hashCode() + ". Reason: " + e.getMessage());
                         try {
                             Thread.sleep(300);
                         } catch (InterruptedException ignored) {
@@ -121,13 +115,13 @@ public class LANLink {
 //            final ServerSocket server; //TODO Implement DataLoad Sending
 //
 //            if (key != null) {
-//                Log.i("LANLink", "Encrypting Packet...");
+//                Log.i(getClass().getSimpleName(), "Encrypting Packet...");
 //                json = RSAHelper.encrypt(json, key);
-//                Log.i("LANLink", "Packet encrypted successfully!");
+//                Log.i(getClass().getSimpleName(), "Packet encrypted successfully!");
 //            }
 
             try {
-                DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
+                DataOutputStream writer = new DataOutputStream(this.socket.getOutputStream());
                 writer.writeUTF(json.serialize());
                 writer.flush();
 //                writer.close();
@@ -150,24 +144,24 @@ public class LANLink {
     }
 
     public boolean sendPacket(JSONConverter json, Server.SendPacketStatusCallback callback) {
-        Log.i("LANLink", "Sending Packet, no need to Encrypt.");
+        Log.i(getClass().getSimpleName(), "Sending Packet, no need to Encrypt.");
         return sendPacketProtected(json, callback, null);
     }
 
     public boolean sendPacket(JSONConverter json, Server.SendPacketStatusCallback callback, PublicKey key) {
-        Log.i("LANLink", "Sending Packet, going to Encrypt");
+        Log.i(getClass().getSimpleName(), "Sending Packet, going to Encrypt");
         return sendPacketProtected(json, callback, key);
     }
 
     private void receivedNetworkPacket(JSONConverter json) {
-        Log.i("LANLink", "Received Packet of Type: " + json.getType());
+        Log.i(getClass().getSimpleName(), "Received Packet of Type: " + json.getType());
 //        if (json.getType().equals(PacketType.ENCRYPTED_PACKET)) {
 //            try {
-//                Log.i("LANLink", "Trying to Decrypt Packet...");
+//                Log.i(getClass().getSimpleName(), "Trying to Decrypt Packet...");
 //                json = RSAHelper.decrypt(json, privKey);
-//                Log.i("LANLink", "Packet decrypted successfully!");
+//                Log.i(getClass().getSimpleName(), "Packet decrypted successfully!");
 //            } catch (Exception e) {
-//                System.err.println("Error Decrypting Packet.");
+//                Log.e(getClass().getSimpleName(), "Error Decrypting Packet.");
 //                e.printStackTrace();
 //            }
 //        }
@@ -175,7 +169,7 @@ public class LANLink {
     }
 
     private void packageReceived(JSONConverter json) {
-        Log.i("LANLink", "Sending Packet to all Receivers!");
+        Log.i(getClass().getSimpleName(), "Sending Packet to all Receivers!");
         for (PacketReceiver pr : receivers) {
             pr.onPacketReceived(json);
         }
@@ -206,7 +200,7 @@ public class LANLink {
 
     public boolean linkShouldBeKeptAlive() {
         return true;
-    } //TODO Remedy Temp Fix (Should be false)
+    }
 
     public void addPacketReceiver(PacketReceiver pr) {
         receivers.add(pr);

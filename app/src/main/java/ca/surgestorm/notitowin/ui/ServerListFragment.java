@@ -1,7 +1,11 @@
 package ca.surgestorm.notitowin.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,6 +37,7 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.i(getClass().getSimpleName(), "ON CREATE CALLED");
         fragmentHandler = new Handler();
 //        Objects.requireNonNull(mainActivity.getActionBar()).setTitle("Servers on LAN");
         rootView = inflater.inflate(R.layout.serverlist_activity, container, false);
@@ -65,7 +70,7 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
 
     private void refreshServerList() {
         swipeRefreshLayout.setRefreshing(true);
-        Log.i("MainActivity", "Refresh Activated!");
+        Log.i(getClass().getSimpleName(), "Refresh Activated!");
         BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             service.onServerListChanged();
             service.onNetworkChange();
@@ -92,14 +97,14 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
         BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             final Server server = (Server) service.getDevices().values().toArray()[position];
             if (server != null) {
-                System.out.println("Server Name: " + server.getName() + " clicked!");
+                Log.i(getClass().getSimpleName(), "Server Name: " + server.getName() + " clicked!");
                 if (!server.isPaired()) {
-                    System.out.println("Server is not paired.");
+                    Log.i(getClass().getSimpleName(), "Server is not paired.");
                     if (server.isPairRequestedByPeer()) {
-                        System.out.println("Server's Connection is requested by peer.");
+                        Log.i(getClass().getSimpleName(), "Server's Connection is requested by peer.");
                         server.acceptPairing();
                     } else {
-                        System.out.println("Server's Connection is not requested by peer.");
+                        Log.i(getClass().getSimpleName(), "Server's Connection is not requested by peer.");
                         server.requestPairing();
                     }
                 }
@@ -108,6 +113,7 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
 
     }
 
+    @SuppressLint("ApplySharedPref")
     private void clearTrustedAction() {
         SharedPreferences sharedPreferences = MainActivity.getAppContext().getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
         Set<String> trustedServers = sharedPreferences.getAll().keySet();
@@ -117,6 +123,12 @@ public class ServerListFragment extends Fragment implements RecyclerViewClickLis
                 Objects.requireNonNull(server).unpair();
             }
         });
-        dataSetChanged();
+        sharedPreferences.edit().clear().commit();
+        Intent mStartActivity = new Intent(MainActivity.getAppContext(), MainActivity.class);
+        int mPendingIntentId = 123456;
+        PendingIntent mPendingIntent = PendingIntent.getActivity(MainActivity.getAppContext(), mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager mgr = (AlarmManager) mainActivity.getSystemService(Context.ALARM_SERVICE);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+        System.exit(0);
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Base64;
+import android.util.Log;
 import org.spongycastle.asn1.x500.X500NameBuilder;
 import org.spongycastle.asn1.x500.style.BCStyle;
 import org.spongycastle.cert.X509CertificateHolder;
@@ -75,7 +76,7 @@ public class SSLHelper {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("Already Have Cert!");
+            Log.i(SSLHelper.class.getSimpleName(), "Already Have Cert!");
             try {
                 SharedPreferences globalSettings = PreferenceManager.getDefaultSharedPreferences(context);
                 byte[] certificateBytes = android.util.Base64.decode(globalSettings.getString("certificate", ""), 0);
@@ -84,7 +85,7 @@ public class SSLHelper {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("Cert Read Success!");
+            Log.i(SSLHelper.class.getSimpleName(), "Cert Read Success!");
         }
     }
 

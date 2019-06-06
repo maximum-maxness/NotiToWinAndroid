@@ -135,7 +135,7 @@ public class BackgroundService extends Service {
         boolean wasEmpty = discoveryModeAcquisitions.isEmpty();
         discoveryModeAcquisitions.add(key);
         if (wasEmpty) {
-            onNetworkChange();
+//            onNetworkChange();
         }
         //Log.e("acquireDiscoveryMode",key.getClass().getName() +" ["+discoveryModeAcquisitions.size()+"]");
         return wasEmpty;
@@ -189,7 +189,7 @@ public class BackgroundService extends Service {
         new Thread(() -> {
             for (Server server : servers.values()) {
                 if (!server.isPaired() && !server.isPairRequested() && !server.isPairRequestedByPeer() && !server.deviceShouldBeKeptAlive()) {
-                server.disconnect();
+                    server.disconnect();
                 }
             }
         }).start();
@@ -259,7 +259,7 @@ public class BackgroundService extends Service {
 
     private void registerLinkProviders() {
 //        if (linkProviders.isEmpty())
-            linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
+        linkProviders.add(new LANLinkProvider(MainActivity.getAppContext()));
     }
 
     public Server getServer(String id) {
@@ -307,7 +307,7 @@ public class BackgroundService extends Service {
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(new BroadcastReceiverNTW(), filter);
 
-        Log.i("BackgroundService", "Service not started yet, initializing...");
+        Log.i(getClass().getSimpleName(), "Service not started yet, initializing...");
 
 //        new Thread(() ->
         initSecurity(this);
@@ -326,7 +326,12 @@ public class BackgroundService extends Service {
 
     public void sendGlobalPacket(JSONConverter json) {
         for (Server server : servers.values()) {
-            server.sendPacket(json);
+            if (server.isPaired()) {
+                Log.i(getClass().getSimpleName(), server.getName() + " paired, sending packet.");
+                server.sendPacket(json);
+            } else {
+                Log.i(getClass().getSimpleName(), server.getName() + " not paired, not sending packet.");
+            }
         }
     }
 

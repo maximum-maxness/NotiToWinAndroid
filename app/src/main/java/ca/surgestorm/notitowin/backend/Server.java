@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import ca.surgestorm.notitowin.BackgroundService;
@@ -18,7 +17,6 @@ import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
 import ca.surgestorm.notitowin.ui.MainActivity;
-import ca.surgestorm.notitowin.ui.NotiListFragment;
 import ca.surgestorm.notitowin.ui.ServerListFragment;
 
 import java.security.PrivateKey;
@@ -125,9 +123,9 @@ public class Server implements LANLink.PacketReceiver {
 
     @Override
     public void onPacketReceived(JSONConverter json) {
-        System.out.println("Received Packet of Type: " + json.getType());
+        Log.i(getClass().getSimpleName(), "Received Packet of Type: " + json.getType());
         if (PacketType.PAIR_REQUEST.equals(json.getType())) {
-            System.out.println("Pair Packet!");
+            Log.i(getClass().getSimpleName(), "Pair Packet!");
             for (LANLinkHandler llh : pairingHandlers.values()) {
                 try {
                     llh.packageReceived(json);
@@ -158,7 +156,7 @@ public class Server implements LANLink.PacketReceiver {
     public boolean isConnected() {
         boolean b = false;
         for (LANLink link : links) {
-            System.out.println("Link is connected?" + (b = link.isConnected()));
+            Log.i(getClass().getSimpleName(), "Link is connected?" + (b = link.isConnected()));
         }
         return b;
     }
@@ -231,7 +229,7 @@ public class Server implements LANLink.PacketReceiver {
     }
 
     public void addLink(JSONConverter identityPacket, LANLink link) {
-        System.out.println("Adding Link to Client ID: " + clientID);
+        Log.i(getClass().getSimpleName(), "Adding Link to Client ID: " + clientID);
         if (identityPacket.has("clientName")) {
             this.name = (identityPacket.getString("clientName"));
             SharedPreferences.Editor editor = settings.edit();
@@ -242,14 +240,14 @@ public class Server implements LANLink.PacketReceiver {
             this.osName = identityPacket.getString("osName");
         }
         if (identityPacket.has("certificate")) {
-            System.out.println("Packet has a certificate!");
+            Log.i(getClass().getSimpleName(), "Packet has a certificate!");
             String certificateString = identityPacket.getString("certificate");
             try {
-                System.out.println("Parsing Certificate...");
+                Log.i(getClass().getSimpleName(), "Parsing Certificate...");
                 byte[] certificateBytes = Base64.getDecoder().decode(certificateString);
                 certificate = SSLHelper.parseCertificate(certificateBytes);
             } catch (Exception e) {
-                System.err.println("Error Parsing Certificate.");
+                Log.e(getClass().getSimpleName(), "Error Parsing Certificate.");
                 e.printStackTrace();
             }
         }
@@ -257,16 +255,16 @@ public class Server implements LANLink.PacketReceiver {
         links.add(link);
 
         try {
-            System.out.println("Setting Private Key..");
+            Log.i(getClass().getSimpleName(), "Setting Private Key..");
             PrivateKey privateKey = RSAHelper.getPrivateKey(context);
             link.setPrivateKey(privateKey);
-            System.out.println("Set Private Key Successfully!");
+            Log.i(getClass().getSimpleName(), "Set Private Key Successfully!");
         } catch (Exception e) {
-            System.err.println("Error setting private key!");
+            Log.e(getClass().getSimpleName(), "Error setting private key!");
             e.printStackTrace();
         }
 
-        Log.i("Server", "addLink " + link.getLinkProvider().getName() + " -> " + getName() + " active links: " + links.size());
+        Log.i(getClass().getSimpleName(), "addLink " + link.getLinkProvider().getName() + " -> " + getName() + " active links: " + links.size());
 
         if (!pairingHandlers.containsKey(link.getName())) {
             LANLinkHandler.PairingHandlerCallback callback =
@@ -306,7 +304,7 @@ public class Server implements LANLink.PacketReceiver {
     }
 
     public void removeLink(LANLink link) {
-        System.out.println("Removing link: " + link.getName());
+        Log.i(getClass().getSimpleName(), "Removing link: " + link.getName());
         boolean linkExists = false;
         for (LANLink llink : links) {
             if (llink.getName().equals(link.getName())) {
@@ -324,26 +322,23 @@ public class Server implements LANLink.PacketReceiver {
 
     private void pairingDone() {
         hidePairingNotification();
-        System.out.println("Pairing was a success!!!");
+        Log.i(getClass().getSimpleName(), "Pairing was a success!!!");
         pairStatus = (PairStatus.Paired);
         SharedPreferences preferences = context.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
         preferences.edit().putBoolean(clientID, true).apply();
 
         SharedPreferences.Editor editor = context.getSharedPreferences(clientID, Context.MODE_PRIVATE).edit();
         editor.putString("serverName", name);
+        editor.putString("serverOS", osName);
+        editor.putString("serverOSVer", osVer);
         editor.apply();
-        Intent intent = new Intent(MainActivity.getAppContext(), NotiListFragment.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        Bundle bundle = new Bundle();
-        bundle.putString("selectedClient", clientID);
-        MainActivity.getAppContext().startActivity(intent, bundle);
         for (PairingCallback pb : pairingCallback) {
             pb.pairingSuccessful();
         }
     }
 
     private void unpairInternal() {
-        System.out.println("Forcing an Unpair..");
+        Log.i(getClass().getSimpleName(), "Forcing an Unpair..");
         pairStatus = (PairStatus.NotPaired);
 
         SharedPreferences preferences = context.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE);
@@ -360,7 +355,7 @@ public class Server implements LANLink.PacketReceiver {
     public void displayPairingNotification() {
 
         hidePairingNotification();
-
+        Log.i(getClass().getSimpleName(), "Creating Pairing Noti...");
         notificationId = (int) System.currentTimeMillis();
 
         Intent intent = new Intent(MainActivity.getAppContext(), MainActivity.class);
@@ -420,7 +415,7 @@ public class Server implements LANLink.PacketReceiver {
     }
 
     public boolean sendPacketBlocking(final JSONConverter json, final SendPacketStatusCallback callback) {
-        System.out.println("Sending Packet to all Applicable Links!");
+        Log.i(getClass().getSimpleName(), "Sending Packet to all Applicable Links!");
         boolean shouldUseEncryption = (!json.getType().equals(PacketType.PAIR_REQUEST) && isPaired());
         boolean success = false;
         for (final LANLink link : links) {
@@ -432,7 +427,7 @@ public class Server implements LANLink.PacketReceiver {
             }
             if (success) break;
         }
-        System.out.println("Packet send success? " + success);
+        Log.i(getClass().getSimpleName(), "Packet send success? " + success);
         return success;
     }
 
@@ -441,7 +436,7 @@ public class Server implements LANLink.PacketReceiver {
         for (LANLinkHandler llh : pairingHandlers.values()) {
             pairRequested = pairRequested || llh.isPairRequested();
         }
-        System.out.println("Is pair Requested? " + pairRequested);
+        Log.i(getClass().getSimpleName(), "Is pair Requested? " + pairRequested);
         return pairRequested;
     }
 
@@ -452,7 +447,7 @@ public class Server implements LANLink.PacketReceiver {
             pairRequestedByPeer = pairRequestedByPeer || llh.isPairRequestedByPeer();
             paired = paired || llh.isPaired();
         }
-        System.out.println("Is pair requested by peer? " + pairRequestedByPeer + ", is Paired? " + paired);
+        Log.i(getClass().getSimpleName(), "Is pair requested by peer? " + pairRequestedByPeer + ", is Paired? " + paired);
         return pairRequestedByPeer;
     }
 

@@ -34,7 +34,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void requestPairing() {
-        System.out.println("Request Pairing Called!");
+        Log.i(getClass().getSimpleName(), "Request Pairing Called!");
         Server.SendPacketStatusCallback callback =
                 new Server.SendPacketStatusCallback() {
 
@@ -64,7 +64,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void unpair() {
-        Log.i("LANLinkHandler", "UnPairing Server ID: " + server.getServerID());
+        Log.i(getClass().getSimpleName(), "UnPairing Server ID: " + server.getServerID());
         pairStatus = PairStatus.NotPaired;
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", false);
@@ -73,7 +73,7 @@ public class LANLinkHandler { // TODO Finish and Implement
 
     public void acceptPairing() {
         hidePairingNotification();
-        Log.i("LANLinkHandler", "Accepting the Pair for Server ID: " + server.getServerID());
+        Log.i(getClass().getSimpleName(), "Accepting the Pair for Server ID: " + server.getServerID());
         Server.SendPacketStatusCallback callback =
                 new Server.SendPacketStatusCallback() {
 
@@ -92,7 +92,7 @@ public class LANLinkHandler { // TODO Finish and Implement
 
     public void rejectPairing() {
         hidePairingNotification();
-        Log.i("LANLinkHandler", "Rejecting Pair for Server ID: " + server.getServerID());
+        Log.i(getClass().getSimpleName(), "Rejecting Pair for Server ID: " + server.getServerID());
         pairStatus = PairStatus.NotPaired;
         JSONConverter json = new JSONConverter(PacketType.PAIR_REQUEST);
         json.set("pair", false);
@@ -130,7 +130,7 @@ public class LANLinkHandler { // TODO Finish and Implement
     }
 
     public void packageReceived(JSONConverter json) {
-        Log.i("LANLinkHandler", "Package Received for Server ID: " + server.getServerID());
+        Log.i(getClass().getSimpleName(), "Package Received for Server ID: " + server.getServerID());
         boolean wantsToPair = json.getBoolean("pair");
 
         if (wantsToPair == isPaired()) {
@@ -143,7 +143,7 @@ public class LANLinkHandler { // TODO Finish and Implement
         }
 
         if (wantsToPair) {
-            Log.i("LANLinkHandler", "Server wants to Pair.");
+            Log.i(getClass().getSimpleName(), "Server wants to Pair.");
             try {
                 String publicKeyStr = json.getString("publicKey").replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----\n", "");
                 byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
@@ -178,7 +178,7 @@ public class LANLinkHandler { // TODO Finish and Implement
                 pairingHandlerCallback.incomingRequest();
             }
         } else {
-            Log.i("LANLinkHandler", "Unpair Request from server ID: " + server.getServerID());
+            Log.i(getClass().getSimpleName(), "Unpair Request from server ID: " + server.getServerID());
             if (pairStatus == PairStatus.Requested) {
                 hidePairingNotification();
                 pairingHandlerCallback.pairingFailed("Cancelled");
@@ -197,7 +197,7 @@ public class LANLinkHandler { // TODO Finish and Implement
                     Base64.getEncoder().encodeToString(server.certificate.getEncoded());
             editor.putString("certificate", encodedCertificate);
         } catch (NullPointerException n) {
-            System.err.println("No Certificate Exists!");
+            Log.e(getClass().getSimpleName(), "No Certificate Exists!");
         } catch (Exception e) {
             e.printStackTrace();
         }

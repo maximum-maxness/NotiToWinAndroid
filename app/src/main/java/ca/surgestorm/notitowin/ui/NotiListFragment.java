@@ -38,7 +38,7 @@ public class NotiListFragment extends Fragment implements RecyclerViewClickListe
     public void onResume() {
         super.onResume();
 //        anp.onDestroy();
-        System.out.println("Resuming View!");
+        Log.i(getClass().getSimpleName(), "Resuming View!");
     }
 
     @Override
@@ -47,7 +47,7 @@ public class NotiListFragment extends Fragment implements RecyclerViewClickListe
         rootView = inflater.inflate(R.layout.notilist_activity, container, false);
         swipeRefreshLayout = rootView.findViewById(R.id.refresh_notilist_layout);
         swipeRefreshLayout.setOnRefreshListener(this::refreshAction);
-        System.out.println("Creating View!");
+        Log.i(getClass().getSimpleName(), "Creating View!");
         anp = new ActiveNotiProcessor();
         initializeView();
         return rootView;
@@ -55,7 +55,7 @@ public class NotiListFragment extends Fragment implements RecyclerViewClickListe
 
     private void refreshAction() {
         swipeRefreshLayout.setRefreshing(true);
-        Log.i("NotiListFragment", "Refresh Activated!");
+        Log.i(getClass().getSimpleName(), "Refresh Activated!");
         anp.updateTimes();
         updater.notifyDataSetChanged();
         refreshButtonPressed = true;
@@ -96,7 +96,7 @@ public class NotiListFragment extends Fragment implements RecyclerViewClickListe
 //        try {
         JSONConverter json = defaultNotifications.get(position).populateJSON();
         String s = json.serialize();
-        Log.i("NotiToWin", "JSON Export: " + s);
+        Log.i(getClass().getSimpleName(), "JSON Export: " + s);
         BackgroundService.RunCommand(MainActivity.getAppContext(), service -> {
             service.sendGlobalPacket(json);
         });

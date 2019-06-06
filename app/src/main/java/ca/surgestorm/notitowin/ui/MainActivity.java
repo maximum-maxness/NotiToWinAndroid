@@ -50,6 +50,27 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         return false;
     };
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            for (String key : Objects.requireNonNull(getIntent().getExtras()).keySet()) {
+                Log.d("MainActivity", key + " is a key in the bundle.");
+            }
+        } catch (NullPointerException ignored) {
+        }
+        if (getIntent().hasExtra("serverID")) {
+            Log.i("MainActivity", "Got Notification Result!");
+            String serverID = getIntent().getStringExtra("serverID");
+            String pairStatus = getIntent().getStringExtra("pair_request_stat");
+            if (pairStatus != null) {
+                Log.i("MainActivity", "pair status is " + pairStatus);
+                serverID = onPairResultFromNotification(serverID, pairStatus);
+                //TODO Something after the client accepts the pair from the server
+            }
+        }
+    }
+
     //    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -69,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         for (String s : IPHelper.getInternalIP(true))
             Log.i("INTERNAL IP", s);
+
 
         initFragments();
 
@@ -92,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         manager.beginTransaction().show(serverListFragment).commit();
     }
 
-    public Fragment getVisibleFragment() {
+    private Fragment getVisibleFragment() {
         FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         for (Fragment fragment : fragments) {
@@ -130,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private void setContentFragment(String tag) {
         FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction().hide(getVisibleFragment()).commit();
+        manager.beginTransaction().hide(Objects.requireNonNull(getVisibleFragment())).commit();
         manager.beginTransaction().show(Objects.requireNonNull(manager.findFragmentByTag(tag))).commit();
     }
 
