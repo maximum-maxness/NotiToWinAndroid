@@ -34,7 +34,7 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         this.context = context;
     }
 
-    private static ServerSocket openTCPServerOnFreePort() throws IOException {
+    static ServerSocket openTCPServerOnFreePort() throws IOException {
         Log.i(LANLinkProvider.class.getSimpleName(), "Opening TCP Server On Free Port.");
         int tcpPort = LANLinkProvider.MIN_PORT;
         while (tcpPort <= MAX_PORT) {
@@ -222,10 +222,10 @@ public class LANLinkProvider implements LANLink.LinkDisconnectedCallback {
         LANLink currentLink = visibleServers.get(serverID);
         if (currentLink != null) {
             Log.i(getClass().getSimpleName(), "Re Using Same Link for Server ID: " + serverID);
-            if (currentLink.isConnected() && (currentLink.getConnectionSource() != connectionStarted)) {
-                Log.i(getClass().getSimpleName(), "Already connected to server, reverse connection not needed.");
-                return;
-            }
+//            if (currentLink.isConnected() && (currentLink.getConnectionSource() != connectionStarted)) {
+//                Log.i(getClass().getSimpleName(), "Already connected to server, reverse connection not needed.");
+//                return;
+//            }
             final Socket oldSocket = currentLink.reset(socket, connectionStarted);
         } else {
             Log.i(getClass().getSimpleName(), "Creating a new Link for Server ID: " + serverID);

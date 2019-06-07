@@ -231,6 +231,7 @@ public class DefaultNotification { //TODO Rewrite DefaultNotification Class so t
         } else {
             json.set("isRepliable", this.isRepliable);
         }
+        json.setDataLoad(new DataLoad(getIconByte()));
         return json;
     }
 

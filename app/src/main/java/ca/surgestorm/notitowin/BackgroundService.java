@@ -227,7 +227,7 @@ public class BackgroundService extends Service {
         if (connectedServers.isEmpty()) {
             notification.setContentText("No Servers Connected!");
         } else {
-            notification.setContentText("Connected to Servers:" + TextUtils.join(", ", connectedServers));
+            notification.setContentText("Connected to Servers: " + TextUtils.join(", ", connectedServers));
         }
 
         return notification.build();

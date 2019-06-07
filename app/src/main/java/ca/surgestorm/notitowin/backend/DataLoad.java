@@ -69,4 +69,9 @@ public class DataLoad {
         return this.size;
     }
 
+    public long getSize() {
+        return this.size;
+    }
+
+
 }
