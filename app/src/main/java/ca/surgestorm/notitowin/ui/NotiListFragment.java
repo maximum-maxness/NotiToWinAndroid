@@ -25,7 +25,7 @@ public class NotiListFragment extends Fragment implements RecyclerViewClickListe
     private RecyclerView recyclerView;
     public static ArrayList<DefaultNotification> defaultNotifications;
     private NotiListUpdater updater;
-    private ActiveNotiProcessor anp;
+    public static ActiveNotiProcessor anp;
     private View rootView;
     private SwipeRefreshLayout swipeRefreshLayout;
 

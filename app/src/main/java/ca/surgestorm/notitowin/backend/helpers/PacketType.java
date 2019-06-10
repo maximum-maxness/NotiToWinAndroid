@@ -12,6 +12,7 @@ public class PacketType {
     public static final String NOTI_REQUEST = "ANDR_NOTI_RECEIVE";
     public static final String ENCRYPTED_PACKET = "ENCRYPTED_PACKET";
     public static final String NOTIFICATION = "NOTIFICATION";
+    public static final String NOTIFICATION_ACTION = "NOTIFICATION_ACTION";
     public static final String IDENTITY_PACKET = "IDENTITY";
     public static final String SERVER_ERROR = "WIN_ERROR";
     public static final String SEND_REPLY = "WIN_REPLY_RECEIVE";

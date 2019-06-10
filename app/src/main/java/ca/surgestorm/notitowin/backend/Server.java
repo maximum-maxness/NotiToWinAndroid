@@ -17,6 +17,7 @@ import ca.surgestorm.notitowin.backend.helpers.SSLHelper;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLink;
 import ca.surgestorm.notitowin.controller.networking.linkHandlers.LANLinkHandler;
 import ca.surgestorm.notitowin.ui.MainActivity;
+import ca.surgestorm.notitowin.ui.NotiListFragment;
 import ca.surgestorm.notitowin.ui.ServerListFragment;
 
 import java.security.PrivateKey;
@@ -134,7 +135,10 @@ public class Server implements LANLink.PacketReceiver {
                 }
             }
         } else if (isPaired()) {
-            //Case while paired, will implement later.
+            if (json.getType().equals(PacketType.NOTIFICATION_ACTION)) {
+                Log.i(getClass().getSimpleName(), "Notification Action Packet!");
+                NotiListFragment.anp.onPacketReceived(json);
+            }
             //TODO Notification Reply
         } else {
             unpair();

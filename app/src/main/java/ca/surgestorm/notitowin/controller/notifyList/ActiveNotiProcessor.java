@@ -1,8 +1,6 @@
 package ca.surgestorm.notitowin.controller.notifyList;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Notification;
+import android.app.*;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +10,7 @@ import android.text.SpannableString;
 import android.util.Log;
 import ca.surgestorm.notitowin.BackgroundService;
 import ca.surgestorm.notitowin.backend.DefaultNotification;
+import ca.surgestorm.notitowin.backend.JSONConverter;
 import ca.surgestorm.notitowin.backend.Server;
 import ca.surgestorm.notitowin.ui.MainActivity;
 import ca.surgestorm.notitowin.ui.NotiListFragment;
@@ -166,6 +165,45 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         }
     }
 
+    private void replyToNotification(String id, String message) {
+        if (pendingIntents.isEmpty() || !pendingIntents.containsKey(id)) {
+            Log.e("ActiveNotiProcessor", "No such notification");
+            return;
+        }
+
+        NotificationReply repliableNotification = pendingIntents.get(id);
+        if (repliableNotification == null) {
+            Log.e("ActiveNotiProcessor", "No such notification");
+            return;
+        }
+        RemoteInput[] remoteInputs = new RemoteInput[repliableNotification.remoteInputs.size()];
+
+        Intent localIntent = new Intent();
+        localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Bundle localBundle = new Bundle();
+        int i = 0;
+        for (RemoteInput remoteIn : repliableNotification.remoteInputs) {
+            remoteInputs[i] = remoteIn;
+            localBundle.putCharSequence(remoteInputs[i].getResultKey(), message);
+            i++;
+        }
+        RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
+
+        try {
+            repliableNotification.pendingIntent.send(MainActivity.getAppContext(), 0, localIntent);
+        } catch (PendingIntent.CanceledException e) {
+            Log.e("NotificationPlugin", "replyToNotification error: " + e.getMessage());
+        }
+        pendingIntents.remove(id);
+    }
+
+    public void onPacketReceived(JSONConverter json) {
+        if (json.has("requestReplyId")) {
+            Log.i(getClass().getSimpleName(), "Replying to notification with reply ID " + json.getString("requestReplyId"));
+            replyToNotification(json.getString("requestReplyId"), json.getString("message"));
+        }
+    }
+
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
         sendNotification(statusBarNotification);
@@ -176,12 +214,17 @@ public class ActiveNotiProcessor implements NotificationCollector.NotificationLi
         Notification notification = statusBarNotification.getNotification();
         String key = statusBarNotification.getKey();
         boolean beenRemoved = false;
+        DefaultNotification defaultNotification = null;
         for (DefaultNotification dn : activeNotis) {
             if (dn.getId().equals(key)) {
-                activeNotis.remove(dn);
-                currentNotis.remove(key);
-                beenRemoved = true;
+                defaultNotification = dn;
+                break;
             }
+        }
+        if (defaultNotification != null) {
+            activeNotis.remove(defaultNotification);
+            currentNotis.remove(key);
+            beenRemoved = true;
         }
         if (!beenRemoved) Log.e("NotiRemover", "Nothing has been removed.");
 
